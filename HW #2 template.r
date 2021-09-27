@@ -98,7 +98,7 @@ ozone %>% ggplot(aes(x=Year,y=ozone))+
 # the intervention.
 
 ozone %>% ggplot(aes(group=Year, x=Year,y=ozone, fill=Year)) + 
-  geom_boxplot(outlier.colour = 'Magenta') + theme(legend.position = 'none') + 
+  geom_boxplot(outlier.colour = 'Green') + theme(legend.position = 'none') + 
   geom_vline(xintercept=1960, color="red", size=0.2)
 #In this second graph, we can get a better sense of the medians and quartiles,
 # and outliers by using boxplots for each year. We can clearly see how after 
@@ -107,10 +107,42 @@ ozone %>% ggplot(aes(group=Year, x=Year,y=ozone, fill=Year)) +
 #3
 #Does the data provide statistically significant evidence that the opening of 
 #the Golden State Freeway and the implementation of Rule 63 in 1960 reduced the 
-#pollution statistically significantly? Evaluate both the abrupt and the 
-#gradual changes? Report and interpret the estimates of both the abrupt 
-#and the gradual changes in ozone.  Which one do you think it is more 
-#appropriate and meaningful?
+#pollution statistically significantly?
+
+#Ha: Intervention was effective and reduced pollution
+#Ho: Intervention was not effective and did not reduce pollution
+#Tolerance level alpha = 0.05 = 5%
+#Carry out 2 sample t-test to assess whether the intervention was effective
+before1960 = ozone %>% filter(Year < 1960)
+after1960 = ozone %>% filter(Year >= 1960)
+t.test(x= before1960$ozone, y=after1960$ozone, alternative="greater")
+
+#since p-value = 0.00000000001472 < alpha = 0.05
+# the data provides statistically significant evidence 
+# against Ho, hence the intervention is effective.
+
+#Let's visualize the difference
+ozone %>% ggplot(aes(group=Year, x=Year,y=ozone, fill=Year)) + 
+  geom_boxplot(outlier.colour = 'Green') + theme(legend.position = 'none') + 
+  geom_vline(xintercept=1960, color="red", size=0.2) +
+  geom_hline(yintercept=mean(before1960$ozone), color="blue")+
+  geom_hline(yintercept=mean(after1960$ozone), color="magenta")+
+  theme_bw()
+
+#Evaluate both the abrupt and the gradual changes
+#Report and interpret the estimates of both the abrupt and the gradual changes in ozone.
+
+# Let's implement the abrupt change using regression model
+# We create a dummy variable 0/1 and call it 'dummy'
+ozone$Dummy = 0
+ozone$Dummy[61:216] = 1
+ozone %>% head
+M1 = lm(ozone ~ Dummy,data=ozone)
+summary(M1)
+# since in lm output p-values are two sided...
+# p-value = 3.12e-14/2 = 0.0000000000000156
+
+#Which one do you think it is more appropriate and meaningful?
 
 
 #4

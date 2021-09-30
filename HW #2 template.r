@@ -77,6 +77,13 @@ glimpse(nenana1)
 #                    Case 2
 ##################################################
 
+# Import libraries
+library(tidyr)
+library(stringr)
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+
 #1
 ozone = read.table('dtwnLAozone.txt', skip=2, header=TRUE)
 head(ozone)
@@ -86,23 +93,14 @@ ozone = ozone %>% as.matrix %>% melt %>%
 ozone %>% head
 ozone %>% tail
 
-#2
-#Graph the data and describe the patterns you see in the data set.
+#2 Graph the data and describe the patterns you see in the data set.
 
 ozone %>% ggplot(aes(x=Year,y=ozone))+
   geom_point()+ theme_bw() + geom_vline(xintercept=1960, color="red", size=0.2)
-#In this first graph we can appreciate the 12 data points we have for each month
-# of each year. We can clearly see that after 1960, when the intervention took
-# place, no measure is above level 6 of ozone (unlike before 1960, which was 
-# quite common). We can also see how the lowest measures get even lower after
-# the intervention.
 
 ozone %>% ggplot(aes(group=Year, x=Year,y=ozone, fill=Year)) + 
   geom_boxplot(outlier.colour = 'Green') + theme(legend.position = 'none') + 
   geom_vline(xintercept=1960, color="red", size=0.2)
-#In this second graph, we can get a better sense of the medians and quartiles,
-# and outliers by using boxplots for each year. We can clearly see how after 
-# 1960 the boxplots are placed on lower ozone levels.
 
 #3
 #Does the data provide statistically significant evidence that the opening of 
@@ -114,15 +112,18 @@ ozone %>% ggplot(aes(group=Year, x=Year,y=ozone, fill=Year)) +
 #Tolerance level alpha = 0.05 = 5%
 #Carry out 2 sample t-test to assess whether the intervention was effective
 before1960 = ozone %>% filter(Year < 1960)
-after1960 = ozone %>% filter(Year >= 1960)
+after1960 = ozone %>% filter(Year >= 1960 & Year < 1966) #because in 1966 new
+  #regulations were introduced and we don't want them to contaminate the sample
 t.test(x= before1960$ozone, y=after1960$ozone, alternative="greater")
 
-#since p-value = 0.00000000001472 < alpha = 0.05
+#since p-value = 0.00000002391 < alpha = 0.05
 # the data provides statistically significant evidence 
 # against Ho, hence the intervention is effective.
 
 #Let's visualize the difference
-ozone %>% ggplot(aes(group=Year, x=Year,y=ozone, fill=Year)) + 
+ozone1 = ozone[1:132,] #again we leave data after 1966
+
+ozone1 %>% ggplot(aes(group=Year, x=Year, y=ozone, fill=Year)) + 
   geom_boxplot(outlier.colour = 'Green') + theme(legend.position = 'none') + 
   geom_vline(xintercept=1960, color="red", size=0.2) +
   geom_hline(yintercept=mean(before1960$ozone), color="blue")+
@@ -133,53 +134,52 @@ ozone %>% ggplot(aes(group=Year, x=Year,y=ozone, fill=Year)) +
 #Report and interpret the estimates of both the abrupt and the gradual changes in ozone.
 
 # Let's implement the abrupt change using regression model
-# We create a dummy variable 0/1 and call it 'dummy'
-ozone$Dummy = 0
-ozone$Dummy[61:216] = 1
-ozone %>% head
-M1 = lm(ozone ~ Dummy, data=ozone)
+# We create a dummy variable 0/1 and call it 'Dummy'
+ozone1$Dummy = 0
+ozone1$Dummy[61:132] = 1
+M1 = lm(ozone ~ Dummy, data=ozone1)
 summary(M1)
 # since in lm output p-values are two sided...
-# p-value = 3.12e-14/2 = 0.0000000000000156
+# p-value = 2.4e-8/2 = 0.0000000024
 
 # Create a graph to show how regression fits the data
-ozone = ozone %>% mutate(M1=M1$fitted.values)
-ozone %>% ggplot(mapping=aes(x=Year,y=ozone)) + geom_point() + 
+ozone1$M1 = M1$fitted.values
+ozone1 %>% ggplot(mapping=aes(x=Year,y=ozone)) + geom_point() + 
   geom_vline(xintercept=1960, color="red", size=0.2) +
   geom_point(mapping=aes(x=Year, y=M1, col=as.factor(Dummy)))+
   theme_bw()
 
 # Let's implement the gradual change using regression model
+# Ho: Intervention was NOT effective (slope of Ramp is NOT negative)
+# Ha: Intervention is effective (slope of Ramp is negative)
 
 # create ramp for gradual change
-ozone$Ramp = c(rep(0,60),1:156)
-ozone
+ozone1$Ramp = c(rep(0,60),1:72)
+ozone1
 # now capture Ramp using regression model
-M2 = lm(ozone ~ Ramp, data=ozone)
+M2 = lm(ozone ~ Ramp, data=ozone1)
 summary(M2)
 # since in lm output p-values are two sided...
-# p-value = 8.821e-12/2 = 0.00000000000441
+# p-value = 0.000156/2 = 0.000078
 
 # Create a graph to show how regression fits the data
-ozone$M2 = M2$fitted.values
-ozone %>% ggplot(mapping=aes(x=Year,y=ozone)) + geom_point() + 
+ozone1$M2 = M2$fitted.values
+ozone1 %>% ggplot(mapping=aes(x=Year,y=ozone)) + geom_point() + 
   geom_vline(xintercept=1960, color="red", size=0.2) +
-  geom_point(mapping=aes(x=Year, y=M2, col=as.factor(Dummy)))+
-  theme_bw()
+  geom_point(mapping=aes(x=Year, y=M1, col=as.factor(Dummy))) +
+  theme_bw() +
+  geom_point(mapping=aes(x=Year, y=M2), col="magenta")
 
 #Which one do you think it is more appropriate and meaningful?
 # I think a mix of abrupt and gradual change is more appropriate, so let's check it
-M3 = lm(ozone ~ Dummy + Ramp, data=ozone)
+M3 = lm(ozone ~ Dummy + Ramp, data=ozone1)
 summary(M3)
 # Create a graph to show how regression fits the data
-ozone = ozone %>% mutate(M3=M3$fitted.values)
-ozone %>% ggplot(mapping=aes(x=Year,y=ozone)) + geom_point() + 
+ozone1$M3 = M3$fitted.values
+ozone1 %>% ggplot(mapping=aes(x=Year, y=ozone)) + geom_point() + 
   geom_vline(xintercept=1960, color="red", size=0.2) +
-  geom_point(mapping=aes(x=Year, y=M3, col=as.factor(Dummy)))+
+  geom_point(mapping=aes(x=Year, y=M3, col="magenta"))+
   theme_bw()
-# So yes, we could say there's an abrupt component (potentially due to the
-# open of the highway) and a gradual component (due to the implementation
-# of the new regulation)
 
 
 #4 Does the data provide statistically significant evidence that the regulations 
@@ -211,43 +211,50 @@ ozone %>% ggplot(aes(group=Year, x=Year,y=ozone, fill=Year)) +
 
 # Let's implement the abrupt change using regression model
 # We create a dummy variable 0/1 and call it 'dummy'
-ozone$Dummy = 0
-ozone %>% tail
-ozone$Dummy[133:216] = 1
-ozone %>% filter(Year >= 1965 & Year < 1967)
-M1 = lm(ozone ~ Dummy, data=ozone)
+ozone2 = ozone
+ozone2$Dummy = 0
+ozone2 %>% tail
+ozone2$Dummy[133:216] = 1
+ozone2 %>% filter(Year >= 1965 & Year < 1967)
+M1 = lm(ozone ~ Dummy, data=ozone2)
 summary(M1)
 # since in lm output p-values are two sided...
 # p-value = 2.38e-07/2 = 0.000000119
 
 # Create a graph to show how regression fits the data
-ozone$M1 = M1$fitted.values
-ozone %>% ggplot(mapping=aes(x=Year,y=ozone)) + geom_point() + 
+ozone2$M1 = M1$fitted.values
+ozone2 %>% ggplot(mapping=aes(x=Year,y=ozone)) + geom_point() + 
   geom_vline(xintercept=1966, color="red", size=0.2) +
   geom_point(mapping=aes(x=Year, y=M1, col=as.factor(Dummy)))+
   theme_bw()
 
 # Let's implement the gradual change using regression model
 # create ramp for gradual change
-ozone$Ramp = c(rep(0,132),1:84)
-ozone %>% filter(Year >= 1965 & Year < 1967)
-ozone %>% tail
+ozone2$Ramp = c(rep(0,132),1:84)
+ozone2 %>% filter(Year >= 1965 & Year < 1967)
+ozone2 %>% tail
 # now capture Ramp using regression model
-M2 = lm(ozone ~ Ramp, data=ozone)
+M2 = lm(ozone ~ Ramp, data=ozone2)
 summary(M2)
 # since in lm output p-values are two sided...
 # p-value = 1.6e-08/2 = 0.000000008
 
 # Create a graph to show how regression fits the data
-ozone$M2 = M2$fitted.values
-ozone %>% ggplot(mapping=aes(x=Year,y=ozone)) + geom_point() + 
+ozone2$M2 = M2$fitted.values
+ozone2 %>% ggplot(mapping=aes(x=Year,y=ozone)) + geom_point() + 
   geom_vline(xintercept=1966, color="red", size=0.2) +
   geom_point(mapping=aes(x=Year, y=M2, col=as.factor(Dummy)))+
   theme_bw()
 
-#Which one do you think it is more appropriate and meaningful?
-# I think gradual is more appropriate since a regulation is not widely known/implemented
-# from day 1, hence the change experienced has a relevant gradual component
+M3 = lm(ozone ~ Dummy + Ramp, data=ozone2)
+summary(M3)
+# Create a graph to show how regression fits the data
+ozone2$M3 = M3$fitted.values
+ozone2 %>% ggplot(mapping=aes(x=Year,y=ozone)) + geom_point() + 
+  geom_vline(xintercept=1966, color="red", size=0.2) +
+  geom_point(mapping=aes(x=Year,y=M1),col="brown")+
+  theme_bw() +geom_point(mapping=aes(x=Year,y=M2),col="magenta")+
+  geom_point(mapping=aes(x=Year,y=M3),col="blue")
 
 
 #5 Can you capture both interventions, the opening of the Golden State Freeway 
@@ -256,46 +263,56 @@ ozone %>% ggplot(mapping=aes(x=Year,y=ozone)) + geom_point() +
 #and both abrupt and gradual changes? 
 # Let's implement the abrupt change using regression model
 # We create a dummy variable 0/1 and call it 'dummy'
-ozone$Dummy0 = 0
-ozone$Dummy0[61:216] = 1
-ozone %>% head
-M1 = lm(ozone ~ Dummy0 + Dummy, data=ozone)
+ozone$Dummy1 = 0
+ozone$Dummy1[61:216] = 1
+ozone$Dummy2 = 0
+ozone$Dummy2[133:216] = 1
+ozone %>% tail
+M1 = lm(ozone ~ Dummy1 + Dummy2, data=ozone)
 summary(M1)
 # since in lm output p-values are two sided...
 # p-value for Dummy0 = 3.85e-9/2 = 0.00000000001725
 # p-value for Dummy = 0.0488/2 = 0.0244
 
 # Create a graph to show how regression fits the data
-#fix this one
 ozone$M1 = M1$fitted.values
 ozone %>% ggplot(mapping=aes(x=Year,y=ozone)) + geom_point() + 
   geom_vline(xintercept=1960, color="red", size=0.2) +
   geom_vline(xintercept=1966, color="red", size=0.2) +
-  geom_point(mapping=aes(x=Year, y=M1, col=as.factor(Dummy0)))+
-  geom_point(mapping=aes(x=Year, y=M1, col=as.factor(Dummy)))+
+  geom_point(mapping=aes(x=Year, y=M1, col=as.factor(Dummy1)))+
+  geom_point(mapping=aes(x=Year, y=M1, col=as.factor(Dummy2)))+
   theme_bw()
 
 # Let's implement the gradual change using regression model
 # create ramp for gradual change
-ozone$Ramp0 = c(rep(0,60),1:156)
+ozone$Ramp1 = c(rep(0,60),1:156)
+ozone$Ramp2 = c(rep(0,132),1:84)
 ozone
 # now capture Ramp using regression model
-M2 = lm(ozone ~ Ramp0 + Ramp, data=ozone)
+M2 = lm(ozone ~ Ramp1 + Ramp2, data=ozone)
 summary(M2)
 # since in lm output p-values are two sided...
 # p-value for Ramp0 = 0.0001/2 = 0.00005
 # p-value for Ramp = 0.466/2 = 0.233
 
 # Create a graph to show how regression fits the data
-#fix this
 ozone$M2 = M2$fitted.values
 ozone %>% ggplot(mapping=aes(x=Year,y=ozone)) + geom_point() + 
-  geom_vline(xintercept=1960, color="red", size=0.2) +
   geom_vline(xintercept=1966, color="red", size=0.2) +
-  geom_point(mapping=aes(x=Year, y=M2, col=as.factor(Dummy)))+
-  theme_bw()
+  geom_vline(xintercept=1960, color="red", size=0.2) +
+  theme_bw() + geom_point(mapping=aes(x=Year,y=M2), col="magenta")
 
-#What insights do you gain from such model? Summarize the results. 
+
+#M3 = lm(ozone ~ Dummy1 + Dummy2 + Ramp1 + Ramp2, data=ozone)
+M3 = lm(ozone ~ Dummy1 + Ramp2, data=ozone)
+summary(M3)
+# Create a graph to show how regression fits the data
+ozone$M3 = M3$fitted.values
+ozone %>% ggplot(mapping=aes(x=Year,y=ozone)) + geom_point() + 
+  geom_vline(xintercept=1966, color="red", size=0.2) +
+  geom_vline(xintercept=1960, color="red", size=0.2) +
+  theme_bw() +
+  geom_point(mapping=aes(x=Year,y=M3),col="blue")
 
 
 

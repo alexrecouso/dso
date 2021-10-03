@@ -10,111 +10,56 @@
 #                    Case 1
 ##################################################
 
-install.packages("stringr")
-install.packages("tidyr")
+# Import libraries
 library(tidyr)
 library(stringr)
 library(dplyr)
+library(reshape2)
 library(ggplot2)
 
+# setwd
+# Import file
+nenana1 = read.table('Nenana1.txt', header=T, sep='\t', check.names=FALSE)
+head(nenana1)
+
+# Data cleaning
+nenana1$'Date & Time' = str_remove(string=nenana1$'Date & Time', pattern='at ')
+nenana1 = nenana1 %>% mutate(IceBreak=str_c(Year, nenana1$'Date & Time', sep=' '))
+nenana1 = nenana1 %>% mutate(January1=str_c(Year, 'January 1 00:00 AM', sep=' '))
+
+glimpse(nenana1)
+nenana1$IceBreak = as.POSIXlt(nenana1$IceBreak, format = '%Y %B %e %H:$M %p')
+
+glimpse(nenana1)
+nenana1$January1 = as.POSIXlt(nenana1$January1, format = '%Y %B %e %H:$M %p')
+
+glimpse(nenana1)
+head(nenana1) #i don't know why the glimpse thing return <NA> values...
+
+# set KPI
+nenana1$KPI = difftime(nenana1$IceBreak, nenana1$January1, units='days')
+nenana1$KPI = as.numeric(nenana1$KPI)
+
+head(nenana1)
+glimpse(nenana1)
+
 #1
-setwd("~/Desktop/DSO HW2")
-nenana1=read.table('Nenana1.txt',header=T,sep="\t",check.names=FALSE)
-x1.string="1917 April 28 11:30 AM"
-x1.string
-x2.string = "1917 April 30 11:45 AM"
-x2.string
-?as.POSIXlt
-x1.time=as.POSIXlt(x1.string, format="%Y %B %e %H:%M %p")
-x1.time
-x2.time=as.POSIXlt(x2.string, format="%Y %B %e %H:%M %p")
-x2.time
-
-difftime(as.POSIXlt(x2.time),as.POSIXlt(x1.time),unit="days")
-difftime(as.POSIXlt(x2.time),as.POSIXlt(x1.time),unit="hours")
-difftime(as.POSIXlt(x2.time),as.POSIXlt(x1.time),unit="mins")
-
-head(nenana1)
-nenana1$'Date & Time'=str_remove(string=nenana1$'Date & Time', pattern="at ")
-head(nenana1)
-
-nenana1= nenana1 %>% mutate(IceBreak=str_c(Year,`Date & Time`, sep=' '))
-head(nenana1)
-
-nenana1= nenana1 %>% mutate(January1=str_c(Year,'January 1 00:00 AM', sep=' '))
-head(nenana1)
-
-glimpse(nenana1)
-nenana1$IceBreak=as.POSIXlt(nenana1$IceBreak, format="%Y %B %e %H:%M %p")
-glimpse(nenana1)
-nenana1$January1 = as.POSIXlt(nenana1$January1, format="%Y %B %e %H:%M %p")
-glimpse(nenana1)
-head(nenana1)
 
 
 #2
-head(nenana1)
-?difftime
-nenana1$KPI=difftime(nenana1$IceBreak,nenana1$January1,units="days")
-nenana1$KPI
-head(nenana1)
-glimpse(nenana1)
-
-nenana1$KPI=as.numeric(nenana1$KPI)
-head(nenana1)
-glimpse(nenana1)
 
 
 #3
-nenana1 %>% ggplot(aes(x=Year,y=KPI))+geom_line()+ theme_bw() + geom_point() # plot KPI over the years
 
 
-#4 
-x=1:5
-x
-lag(x,n=1)
-data.frame(x,xlag1 = lag(x,n=1), xlag2 = lag(x,n=2))
+#4
 
 
-nenana1$Lag1 =  lag(nenana1$KPI,1)
-head(nenana1)
-nenana1$Lag2 =  lag(nenana1$KPI,2)
-head(nenana1)
-
-nenana1 = nenana1 %>% mutate(Trend = 1:87) #add variable trend
-
-MLag = lm(KPI ~ Trend + Lag1+Lag2, data=nenana1)
-summary(MLag)
-
-nenana1$MLag = c(NA,NA,MLag$fitted.values) # plot data and overlay fitted values
+#5
 
 
-nenana1$MLagResiduals =c(NA,NA,MLag$residuals)
-Acf(nenana1$MLagResiduals) # model is significant because none of the lines crosses the blue line
-Pacf(nenana1$MLagResiduals)
-plot(nenana1$MLagResiduals,type="l") # residuals look like white noise
-abline(h=0)
+#6
 
-
-# 5
-
-
-dim(nenana1)
-head(nenana1)
-M1 = lm(nenana1$KPI ~ Trend,data = nenana1) #run linear model
-summary(M1)
-
-nenana1$M1 = M1$fitted.values
-head(nenana1)
-
-nenana1$Baseline = mean(nenana1$KPI)
-nenana1 %>% ggplot(aes(x=Year,y=KPI))+
-  geom_line()+ theme_bw() + 
-  geom_line(aes(x=Year,y=M1),col="red")+
-  geom_line(aes(x=Year,y=Baseline),col="blue")
-
-
-#6 
 
 #7
 
@@ -126,22 +71,18 @@ nenana1 %>% ggplot(aes(x=Year,y=KPI))+
 
 
 #10
-nenana2=read.table('Nenana2.txt',header=T,sep="\t",check.names=FALSE)
 
 
 ##################################################
 #                    Case 2
 ##################################################
 
-# Import libraries again just in case
+# Import libraries
 library(tidyr)
 library(stringr)
 library(dplyr)
 library(reshape2)
 library(ggplot2)
-
-# Remember to set desired working dir
-setwd("~/Desktop/DSO") #in my case
 
 #1
 ozone = read.table('dtwnLAozone.txt', skip=2, header=TRUE)
@@ -172,7 +113,7 @@ ozone %>% ggplot(aes(group=Year, x=Year,y=ozone, fill=Year)) +
 #Carry out 2 sample t-test to assess whether the intervention was effective
 before1960 = ozone %>% filter(Year < 1960)
 after1960 = ozone %>% filter(Year >= 1960 & Year < 1966) #because in 1966 new
-#regulations were introduced and we don't want them to contaminate the sample
+  #regulations were introduced and we don't want them to contaminate the sample
 t.test(x= before1960$ozone, y=after1960$ozone, alternative="greater")
 #since p-value = 0.00000002391 < alpha = 0.05
 # the data provides statistically significant evidence 
@@ -394,7 +335,6 @@ ozone %>% ggplot(mapping=aes(x=Year,y=ozone)) + geom_point() +
   geom_vline(xintercept=1960, color="red", size=0.2) +
   theme_bw() +
   geom_point(mapping=aes(x=Year,y=M3),col="blue")
-
 
 
 

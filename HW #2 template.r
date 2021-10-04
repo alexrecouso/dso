@@ -10,15 +10,15 @@
 #                    Case 1
 ##################################################
 
-install.packages("stringr")
-install.packages("tidyr")
+#install.packages("stringr")
+#install.packages("tidyr")
 library(tidyr)
 library(stringr)
 library(dplyr)
 library(ggplot2)
 
 #1
-setwd("~/Desktop/DSO HW2")
+#setwd("~/Desktop/DSO HW2")
 nenana1=read.table('Nenana1.txt',header=T,sep="\t",check.names=FALSE)
 x1.string="1917 April 28 11:30 AM"
 x1.string
@@ -127,6 +127,7 @@ nenana1 %>% ggplot(aes(x=Year,y=KPI))+
 
 #10
 nenana2=read.table('Nenana2.txt',header=T,sep="\t",check.names=FALSE)
+head(nenana2)
 
 
 ##################################################

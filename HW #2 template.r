@@ -129,6 +129,31 @@ nenana1 %>% ggplot(aes(x=Year,y=KPI))+
 nenana2=read.table('Nenana2.txt',header=T,sep="\t",check.names=FALSE)
 head(nenana2)
 
+nenana2$'Date & Time'=str_remove(string=nenana2$'Date & Time', pattern="at ")
+head(nenana2)
+
+nenana2 = nenana2 %>% mutate(IceBreak=str_c(Year,`Date & Time`, sep=' '))
+head(nenana2)
+
+nenana2 = nenana2 %>% mutate(January1=str_c(Year,'January 1 00:00 AM', sep=' '))
+head(nenana2)
+
+glimpse(nenana2)
+nenana2$IceBreak=as.POSIXlt(nenana2$IceBreak, format="%Y %B %e %H:%M %p")
+glimpse(nenana2)
+nenana2$January2 = as.POSIXlt(nenana2$January1, format="%Y %B %e %H:%M %p")
+glimpse(nenana2)
+head(nenana2)
+
+nenana2$KPI=difftime(nenana2$IceBreak,nenana2$January1,units="days")
+nenana2$KPI
+head(nenana2)
+glimpse(nenana2)
+
+nenana2$KPI=as.numeric(nenana2$KPI)
+head(nenana2)
+glimpse(nenana2)
+
 
 ##################################################
 #                    Case 2

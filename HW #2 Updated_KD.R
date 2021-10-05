@@ -127,7 +127,20 @@ nenana1 %>% ggplot(aes(x=Year,y=KPI))+
 #10
 
 nenana2=read.table('Nenana2.txt',header=T,sep="\t",check.names=FALSE)
-head(nenana2)
+
+x1.string="1917 April 28 11:30 AM"
+x1.string
+x2.string = "1917 April 30 11:45 AM"
+x2.string
+?as.POSIXlt
+x1.time=as.POSIXlt(x1.string, format="%Y %B %e %H:%M %p")
+x1.time
+x2.time=as.POSIXlt(x2.string, format="%Y %B %e %H:%M %p")
+x2.time
+
+difftime(as.POSIXlt(x2.time),as.POSIXlt(x1.time),unit="days")
+difftime(as.POSIXlt(x2.time),as.POSIXlt(x1.time),unit="hours")
+difftime(as.POSIXlt(x2.time),as.POSIXlt(x1.time),unit="mins")
 
 nenana2$'Date & Time'=str_remove(string=nenana2$'Date & Time', pattern="at ")
 head(nenana2)
@@ -141,10 +154,12 @@ head(nenana2)
 glimpse(nenana2)
 nenana2$IceBreak=as.POSIXlt(nenana2$IceBreak, format="%Y %B %e %H:%M %p")
 glimpse(nenana2)
-nenana2$January2 = as.POSIXlt(nenana2$January1, format="%Y %B %e %H:%M %p")
+nenana2$January1 = as.POSIXlt(nenana2$January1, format="%Y %B %e %H:%M %p")
 glimpse(nenana2)
 head(nenana2)
 
+head(nenana2)
+?difftime
 nenana2$KPI=difftime(nenana2$IceBreak,nenana2$January1,units="days")
 nenana2$KPI
 head(nenana2)
@@ -153,7 +168,6 @@ glimpse(nenana2)
 nenana2$KPI=as.numeric(nenana2$KPI)
 head(nenana2)
 glimpse(nenana2)
-
 
 # Assessing abrupt change
 nenana2 %>% ggplot(aes(x=Year,y=KPI))+geom_line()+ theme_bw() + geom_point()

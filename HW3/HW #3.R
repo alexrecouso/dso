@@ -359,7 +359,7 @@ train3 %>% ggplot(aes(x = Date, y = Total))+
   scale_x_date(date_labels = "%Y-%m-%d")
 
 
-#Evaluation Metrics
+#Evaluation Metrics -------- here we have to compare with testing???
 RMSE_S1 = c(sqrt(mean(M0S1$residuals^2))*100,
             sqrt(mean(M1S1$residuals^2))*100,
             sqrt(mean(M2S1$residuals^2))*100,

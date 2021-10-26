@@ -100,9 +100,6 @@ data_monthly %>% ggplot(aes(x = Date, y = International, color = Month)) +
 data_monthly %>% head
 data_dygraph = ts(data_monthly[,c('Domestic', 'International')], 
                            start = c(2002,10), frequency = 12)
-data_dygraph_international = ts(data_monthly[,c('International')], 
-                           start = c(2002,10), frequency = 12)
-data_dygraph = cbind(data_dygraph_domestic, data_dygraph_international)
 dygraph(data_dygraph) %>% 
   dySeries("International", axis = 'y2') %>% 
   dyAxis("y", label = "DOMESTIC, in mln passengers") %>% 
@@ -359,7 +356,7 @@ train3 %>% ggplot(aes(x = Date, y = Total))+
   scale_x_date(date_labels = "%Y-%m-%d")
 
 
-#Evaluation Metrics -------- here we have to compare with testing???
+#Evaluation Metrics -------- here we have to use testing datasets???
 RMSE_S1 = c(sqrt(mean(M0S1$residuals^2))*100,
             sqrt(mean(M1S1$residuals^2))*100,
             sqrt(mean(M2S1$residuals^2))*100,
@@ -402,3 +399,15 @@ accuracy.table = data.frame(ModelID = ModelID, 'S1 RMSE' = RMSE_S1, 'S1 MAPE' = 
                             MAPE_AVG = MAPE_AVG)
 # sort model from most accurate to least accurate based on MAPE
 accuracy.table %>% arrange(MAPE_AVG)
+
+#####################################################################################
+
+#Evaluation:
+data_dygraph = ts(train1[,c('Total')], 
+                  frequency = 12)
+data_dygraph_test = ts(test1[,c('Total')], 
+                                frequency = 12)
+data_dygraph = cbind(data_dygraph, data_dygraph_test)
+dygraph(data_dygraph) %>% 
+  dyAxis("y", label = "DOMESTIC, in mln passengers") %>% 
+  dyRangeSelector()

@@ -120,46 +120,50 @@ data_monthly$Month = factor(data_monthly$Month)
 data_monthly$Date = as.Date(data_monthly$Date)
 data_monthly %>% head
 
+#Let's decide over which variable we are going to model
+colnames(data_monthly) = c('Year', 'Month', 'Variable', 'International', 'Total')
+data_monthly %>% head
+
 #first let's create the sets for the 3 scenarios
 train1 = subset(data_monthly, Year<2008,
-                select=c(Year, Month, Date, Domestic, International, Total))
+                select=c(Year, Month, Date, Variable))
 test1 = subset(data_monthly, Year>=2008 & Year<2009,
-               select=c(Year, Month, Date, Domestic, International, Total))
+               select=c(Year, Month, Date, Variable))
 train2_prev = subset(data_monthly, Year>=2018 & Year<2019,
-                select=c(Year, Month, Date, Domestic, International, Total))
+                select=c(Year, Month, Date, Variable))
 train2 = train2_prev[10:12,]
 test2 = subset(data_monthly, Year>=2019,
-               select=c(Year, Month, Date, Domestic, International, Total))
+               select=c(Year, Month, Date, Variable))
 train3 = subset(data_monthly, Year<2020,
-                select=c(Year, Month, Date, Domestic, International, Total))
+                select=c(Year, Month, Date, Variable))
 test3 = subset(data_monthly, Year>=2020 & Year<2021,
-                     select=c(Year, Month, Date, Domestic, International, Total))
+                     select=c(Year, Month, Date, Variable))
 
 
 #M0: a baseline model without explanatory variables, 
 # built using the simplest regression model
 # y = b0 + epsilon
-# & using Total as the KPI
-M0S1 = lm(Total ~ 1, data = train1) #S1 stands for Scenario 1
+# & using Variable as the KPI
+M0S1 = lm(Variable ~ 1, data = train1) #S1 stands for Scenario 1
 summary(M0S1)
 train1$M0 = M0S1$fitted.values
-train1 %>% ggplot(aes(x = Date, y = Total))+
+train1 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   scale_x_date(date_labels = "%Y-%m-%d")
 
-M0S2 = lm(Total ~ 1, data = train2) #S2 stands for Scenario 2
+M0S2 = lm(Variable ~ 1, data = train2) #S2 stands for Scenario 2
 summary(M0S2)
 train2$M0 = M0S2$fitted.values
-train2 %>% ggplot(aes(x = Date, y = Total))+
+train2 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   scale_x_date(date_labels = "%Y-%m-%d")
 
-M0S3 = lm(Total ~ 1, data = train3) #S3 stands for Scenario 3
+M0S3 = lm(Variable ~ 1, data = train3) #S3 stands for Scenario 3
 summary(M0S3)
 train3$M0 = M0S3$fitted.values
-train3 %>% ggplot(aes(x = Date, y = Total))+
+train3 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   scale_x_date(date_labels = "%Y-%m-%d")
@@ -168,10 +172,10 @@ train3 %>% ggplot(aes(x = Date, y = Total))+
 #M1
 dim(train1)
 train1 = train1 %>% mutate(Trend = 1:63) #let's capture trend
-M1S1 = lm(Total ~ Trend, data = train1)
+M1S1 = lm(Variable ~ Trend, data = train1)
 summary(M1S1)
 train1$M1 = M1S1$fitted.values
-train1 %>% ggplot(aes(x = Date, y = Total))+
+train1 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
@@ -179,10 +183,10 @@ train1 %>% ggplot(aes(x = Date, y = Total))+
 
 dim(train2)
 train2 = train2 %>% mutate(Trend = 1:3) #let's capture trend
-M1S2 = lm(Total ~ Trend, data = train2)
+M1S2 = lm(Variable ~ Trend, data = train2)
 summary(M1S2)
 train2$M1 = M1S2$fitted.values
-train2 %>% ggplot(aes(x = Date, y = Total))+
+train2 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
@@ -190,10 +194,10 @@ train2 %>% ggplot(aes(x = Date, y = Total))+
 
 dim(train3)
 train3 = train3 %>% mutate(Trend = 1:207) #let's capture trend
-M1S3 = lm(Total ~ Trend, data = train3)
+M1S3 = lm(Variable ~ Trend, data = train3)
 summary(M1S3)
 train3$M1 = M1S3$fitted.values
-train3 %>% ggplot(aes(x = Date, y = Total))+
+train3 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
@@ -230,12 +234,12 @@ train1$NOV[train1$Month=="11"] = 1
 train1$DEC = 0
 train1$DEC[train1$Month=="12"] = 1
 head(train1)
-train1 %>% group_by(Month) %>% summarise(mean(Total))
-M2S1 = lm(Total ~ JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
+train1 %>% group_by(Month) %>% summarise(mean(Variable))
+M2S1 = lm(Variable ~ JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
         data = train1) #to include intercept one month should not be included
 summary(M2S1)
 train1$M2 = M2S1$fitted.values
-train1 %>% ggplot(aes(x = Date, y = Total))+
+train1 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
@@ -268,12 +272,12 @@ train2$NOV[train1$Month=="11"] = 1
 train2$DEC = 0
 train2$DEC[train1$Month=="12"] = 1
 head(train2)
-train2 %>% group_by(Month) %>% summarise(mean(Total))
-M2S2 = lm(Total ~ JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
+train2 %>% group_by(Month) %>% summarise(mean(Variable))
+M2S2 = lm(Variable ~ JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
           data = train2) #to include intercept one month should not be included
 summary(M2S2)
 train2$M2 = M2S2$fitted.values
-train2 %>% ggplot(aes(x = Date, y = Total))+
+train2 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
@@ -306,12 +310,12 @@ train3$NOV[train1$Month=="11"] = 1
 train3$DEC = 0
 train3$DEC[train1$Month=="12"] = 1
 head(train3)
-train3 %>% group_by(Month) %>% summarise(mean(Total))
-M2S3 = lm(Total ~ JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
+train3 %>% group_by(Month) %>% summarise(mean(Variable))
+M2S3 = lm(Variable ~ JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
           data = train3) #to include intercept one month should not be included
 summary(M2S3)
 train3$M2 = M2S3$fitted.values
-train3 %>% ggplot(aes(x = Date, y = Total))+
+train3 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
@@ -320,11 +324,11 @@ train3 %>% ggplot(aes(x = Date, y = Total))+
 
 
 #M3: a model that captures both trend and seasonal components
-M3S1 = lm(Total ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
+M3S1 = lm(Variable ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
         data = train1)
 summary(M3S1)
 train1$M3 = M3S1$fitted.values
-train1 %>% ggplot(aes(x = Date, y = Total))+
+train1 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
@@ -332,11 +336,11 @@ train1 %>% ggplot(aes(x = Date, y = Total))+
   geom_line(aes(x = Date, y = M3), col = "orange") +
   scale_x_date(date_labels = "%Y-%m-%d")
 
-M3S2 = lm(Total ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
+M3S2 = lm(Variable ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
           data = train2)
 summary(M3S2)
 train2$M3 = M3S2$fitted.values
-train2 %>% ggplot(aes(x = Date, y = Total))+
+train2 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
@@ -344,11 +348,11 @@ train2 %>% ggplot(aes(x = Date, y = Total))+
   geom_line(aes(x = Date, y = M3), col = "orange") +
   scale_x_date(date_labels = "%Y-%m-%d")
 
-M3S3 = lm(Total ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
+M3S3 = lm(Variable ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
           data = train3)
 summary(M3S3)
 train3$M3 = M3S3$fitted.values
-train3 %>% ggplot(aes(x = Date, y = Total))+
+train3 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
@@ -362,28 +366,28 @@ RMSE_S1 = c(sqrt(mean(M0S1$residuals^2))*100,
             sqrt(mean(M1S1$residuals^2))*100,
             sqrt(mean(M2S1$residuals^2))*100,
             sqrt(mean(M3S1$residuals^2))*100)
-MAPE_S1 = c(mean(abs((train1$Total - train1$M0)/train1$Total),na.rm=TRUE)*100,
-         mean(abs((train1$Total - train1$M1)/train1$Total),na.rm=TRUE)*100,
-         mean(abs((train1$Total - train1$M2)/train1$Total),na.rm=TRUE)*100,
-         mean(abs((train1$Total - train1$M3)/train1$Total),na.rm=TRUE)*100)
+MAPE_S1 = c(mean(abs((train1$Variable - train1$M0)/train1$Variable),na.rm=TRUE)*100,
+         mean(abs((train1$Variable - train1$M1)/train1$Variable),na.rm=TRUE)*100,
+         mean(abs((train1$Variable - train1$M2)/train1$Variable),na.rm=TRUE)*100,
+         mean(abs((train1$Variable - train1$M3)/train1$Variable),na.rm=TRUE)*100)
 
 RMSE_S2 = c(sqrt(mean(M0S2$residuals^2))*100,
             sqrt(mean(M1S2$residuals^2))*100,
             sqrt(mean(M2S2$residuals^2))*100,
             sqrt(mean(M3S2$residuals^2))*100)
-MAPE_S2 = c(mean(abs((train2$Total - train2$M0)/train2$Total),na.rm=TRUE)*100,
-            mean(abs((train2$Total - train2$M1)/train2$Total),na.rm=TRUE)*100,
-            mean(abs((train2$Total - train2$M2)/train2$Total),na.rm=TRUE)*100,
-            mean(abs((train2$Total - train2$M3)/train2$Total),na.rm=TRUE)*100)
+MAPE_S2 = c(mean(abs((train2$Variable - train2$M0)/train2$Variable),na.rm=TRUE)*100,
+            mean(abs((train2$Variable - train2$M1)/train2$Variable),na.rm=TRUE)*100,
+            mean(abs((train2$Variable - train2$M2)/train2$Variable),na.rm=TRUE)*100,
+            mean(abs((train2$Variable - train2$M3)/train2$Variable),na.rm=TRUE)*100)
 
 RMSE_S3 = c(sqrt(mean(M0S3$residuals^2))*100,
             sqrt(mean(M1S3$residuals^2))*100,
             sqrt(mean(M2S3$residuals^2))*100,
             sqrt(mean(M3S3$residuals^2))*100)
-MAPE_S3 = c(mean(abs((train3$Total - train3$M0)/train3$Total),na.rm=TRUE)*100,
-            mean(abs((train3$Total - train3$M1)/train3$Total),na.rm=TRUE)*100,
-            mean(abs((train3$Total - train3$M2)/train3$Total),na.rm=TRUE)*100,
-            mean(abs((train3$Total - train3$M3)/train3$Total),na.rm=TRUE)*100)
+MAPE_S3 = c(mean(abs((train3$Variable - train3$M0)/train3$Variable),na.rm=TRUE)*100,
+            mean(abs((train3$Variable - train3$M1)/train3$Variable),na.rm=TRUE)*100,
+            mean(abs((train3$Variable - train3$M2)/train3$Variable),na.rm=TRUE)*100,
+            mean(abs((train3$Variable - train3$M3)/train3$Variable),na.rm=TRUE)*100)
 
 # now create evaluation table
 accuracy.table = data.frame('S1 MAPE' = MAPE_S1,
@@ -404,17 +408,3 @@ accuracy.table %>% arrange(MAPE_AVG)
 #####################################################################################
 
 #Evaluation:
-train1 = subset(data_monthly, Year<2008,
-                select=c(Year, Month, Date, Domestic, International, Total))
-test1 = subset(data_monthly, Year>=2008 & Year<2009,
-               select=c(Year, Month, Date, Domestic, International, Total))
-
-train1 %>%  ggplot(aes(x = Date, y = Total)) + geom_line() + geom_point() +
-  geom_line(aes_string(x = "Date", y = paste("M3")), color = "red") + 
-  theme_bw() +
-  geom_line(data = subset(data_monthly, Year<2008,
-                                  select=c(Year, Month, Date, Domestic, International, Total)), 
-            aes(x = Date, y = Total), color="blue") +
-  geom_line(data = subset(data_monthly, Year>=2008 & Year<2009,
-                           select=c(Year, Month, Date, Domestic, International, Total)), 
-             aes(x = Date, y = Total), color = "blue")

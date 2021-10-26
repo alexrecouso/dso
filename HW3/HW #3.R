@@ -20,9 +20,15 @@ library(lubridate)
 library(tidyverse)
 library(dygraphs)
 library(forecast)
+library(rvest)
 #and load data
-data = read_xlsx('Passengers.xlsx')
-data %>% head
+url = "https://www.transtats.bts.gov/Data_Elements.aspx?Qn6n=E"
+data = url %>% read_html() %>% html_nodes(xpath = '//*[@id="GridView1"]') %>% 
+  html_table() 
+typeof(data)
+data = data[[1]] # overwrite data with data frame. 
+data
+
 
 #let's transform columns DOMESTIC and INTERNATIONAL to numeric
 data$DOMESTIC = data %>% select(DOMESTIC) %>% unlist %>%  
@@ -396,7 +402,7 @@ at = as.matrix(accuracy.table)
 MAPE_AVG = c(rowMeans(at))
 MAPE_AVG
 
-ModelID = paste("M",0:3,sep="")
+ModelID = paste("M", 0:3, sep = "")
 accuracy.table = data.frame(ModelID = ModelID, 'S1 RMSE' = RMSE_S1, 'S1 MAPE' = MAPE_S1,
                             'S2 RMSE' = RMSE_S2, 'S2 MAPE' = MAPE_S2,
                             'S3 RMSE' = RMSE_S3, 'S3 MAPE' = MAPE_S3,

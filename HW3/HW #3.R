@@ -129,10 +129,9 @@ train1 = subset(data_monthly, Year<2008,
                 select=c(Year, Month, Date, Variable))
 test1 = subset(data_monthly, Year>=2008 & Year<2009,
                select=c(Year, Month, Date, Variable))
-train2_prev = subset(data_monthly, Year>=2018 & Year<2019,
+train2 = subset(data_monthly, Year<2019,
                 select=c(Year, Month, Date, Variable))
-train2 = train2_prev[10:12,]
-test2 = subset(data_monthly, Year>=2019,
+test2 = subset(data_monthly, Year>=2019 & Year<2020,
                select=c(Year, Month, Date, Variable))
 train3 = subset(data_monthly, Year<2020,
                 select=c(Year, Month, Date, Variable))

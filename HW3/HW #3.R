@@ -127,22 +127,27 @@ data_monthly$Date = as.Date(data_monthly$Date)
 data_monthly %>% head
 
 #Let's decide over which variable we are going to model
-colnames(data_monthly) = c('Year', 'Month', 'Variable', 'International', 'Total')
+colnames(data_monthly) = c('Year', 'Month', 'Variable', 'International', 'Total', 'Date')
 data_monthly %>% head
 
 #first let's create the sets for the 3 scenarios
-train1 = subset(data_monthly, Year<2008,
+train1 = subset(data_monthly, Year<=2008,
                 select=c(Year, Month, Date, Variable))
-test1 = subset(data_monthly, Year>=2008 & Year<2009,
+train1$Variable[(dim(train1)[1]-12+1) : dim(train1)[1]] = NA
+test1 = subset(data_monthly, Year<=2008,
                select=c(Year, Month, Date, Variable))
-train2 = subset(data_monthly, Year<2019,
+
+train2 = subset(data_monthly, Year<=2019,
                 select=c(Year, Month, Date, Variable))
-test2 = subset(data_monthly, Year>=2019 & Year<2020,
+train2$Variable[(dim(train2)[1]-12+1) : dim(train2)[1]] = NA
+test2 = subset(data_monthly, Year<=2019,
                select=c(Year, Month, Date, Variable))
-train3 = subset(data_monthly, Year<2020,
+
+train3 = subset(data_monthly, Year<=2020,
                 select=c(Year, Month, Date, Variable))
-test3 = subset(data_monthly, Year>=2020 & Year<2021,
-                     select=c(Year, Month, Date, Variable))
+train3$Variable[(dim(train3)[1]-12+1) : dim(train3)[1]] = NA
+test3 = subset(data_monthly, Year<=2020,
+               select=c(Year, Month, Date, Variable))
 
 
 #M0: a baseline model without explanatory variables, 

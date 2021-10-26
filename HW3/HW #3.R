@@ -19,6 +19,7 @@ library(dplyr)
 library(lubridate)
 library(tidyverse)
 library(dygraphs)
+library(forecast)
 #and load data
 data = read_xlsx('Passengers.xlsx')
 data %>% head
@@ -123,7 +124,7 @@ data_monthly %>% head
 train1 = subset(data_monthly, Year<2008,
                 select=c(Year, Month, Date, Domestic, International, Total))
 test1 = subset(data_monthly, Year>=2008 & Year<2009,
-               select=c(Year, Month, Domestic, International, Total))
+               select=c(Year, Month, Date, Domestic, International, Total))
 train2_prev = subset(data_monthly, Year>=2018 & Year<2019,
                 select=c(Year, Month, Date, Domestic, International, Total))
 train2 = train2_prev[10:12,]
@@ -403,11 +404,17 @@ accuracy.table %>% arrange(MAPE_AVG)
 #####################################################################################
 
 #Evaluation:
-data_dygraph = ts(train1[,c('Total')], 
-                  frequency = 12)
-data_dygraph_test = ts(test1[,c('Total')], 
-                                frequency = 12)
-data_dygraph = cbind(data_dygraph, data_dygraph_test)
-dygraph(data_dygraph) %>% 
-  dyAxis("y", label = "DOMESTIC, in mln passengers") %>% 
-  dyRangeSelector()
+train1 = subset(data_monthly, Year<2008,
+                select=c(Year, Month, Date, Domestic, International, Total))
+test1 = subset(data_monthly, Year>=2008 & Year<2009,
+               select=c(Year, Month, Date, Domestic, International, Total))
+
+train1 %>%  ggplot(aes(x = Date, y = Total)) + geom_line() + geom_point() +
+  geom_line(aes_string(x = "Date", y = paste("M3")), color = "red") + 
+  theme_bw() +
+  geom_line(data = subset(data_monthly, Year<2008,
+                                  select=c(Year, Month, Date, Domestic, International, Total)), 
+            aes(x = Date, y = Total), color="blue") +
+  geom_line(data = subset(data_monthly, Year>=2008 & Year<2009,
+                           select=c(Year, Month, Date, Domestic, International, Total)), 
+             aes(x = Date, y = Total), color = "blue")

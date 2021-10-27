@@ -26,9 +26,8 @@ url = "https://www.transtats.bts.gov/Data_Elements.aspx?Qn6n=E"
 data = url %>% read_html() %>% html_nodes(xpath = '//*[@id="GridView1"]') %>% 
   html_table() 
 typeof(data)
-data = data[[1]] # overwrite data with data frame. 
+data = data[[1]] # overwrite data with data frame
 data
-
 
 #let's transform columns DOMESTIC and INTERNATIONAL to numeric
 data$DOMESTIC = data %>% select(DOMESTIC) %>% unlist %>%  

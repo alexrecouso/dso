@@ -129,84 +129,107 @@ data_monthly %>% head
 colnames(data_monthly) = c('Year', 'Month', 'Variable', 'International', 'Total', 'Date')
 data_monthly %>% head
 
-#first let's create the sets for the 3 scenarios
-train1 = subset(data_monthly, Year<=2008,
-                select=c(Year, Month, Date, Variable))
-train1$Variable[(dim(train1)[1]-12+1) : dim(train1)[1]] = NA
-test1 = subset(data_monthly, Year<=2008,
-               select=c(Year, Month, Date, Variable))
+#Let's capture trend
+data_monthly = data_monthly %>% mutate(Trend = 1:226) 
 
-train2 = subset(data_monthly, Year<=2019,
-                select=c(Year, Month, Date, Variable))
-train2$Variable[(dim(train2)[1]-12+1) : dim(train2)[1]] = NA
-test2 = subset(data_monthly, Year<=2019,
-               select=c(Year, Month, Date, Variable))
+#And last, create seasonal dummies
+data_monthly$JAN = 0
+data_monthly$JAN[data_monthly$Month=="1"] = 1
+data_monthly$FEB = 0
+data_monthly$FEB[data_monthly$Month=="2"] = 1
+data_monthly$MAR = 0
+data_monthly$MAR[data_monthly$Month=="3"] = 1
+data_monthly$APR = 0
+data_monthly$APR[data_monthly$Month=="4"] = 1
+data_monthly$MAY = 0
+data_monthly$MAY[data_monthly$Month=="5"] = 1
+data_monthly$JUN = 0
+data_monthly$JUN[data_monthly$Month=="6"] = 1
+data_monthly$JUL = 0
+data_monthly$JUL[data_monthly$Month=="7"] = 1
+data_monthly$AUG = 0
+data_monthly$AUG[data_monthly$Month=="8"] = 1
+data_monthly$SEP = 0
+data_monthly$SEP[data_monthly$Month=="9"] = 1
+data_monthly$OCT = 0
+data_monthly$OCT[data_monthly$Month=="10"] = 1
+data_monthly$NOV = 0
+data_monthly$NOV[data_monthly$Month=="11"] = 1
+data_monthly$DEC = 0
+data_monthly$DEC[data_monthly$Month=="12"] = 1
 
-train3 = subset(data_monthly, Year<=2020,
-                select=c(Year, Month, Date, Variable))
-train3$Variable[(dim(train3)[1]-12+1) : dim(train3)[1]] = NA
-test3 = subset(data_monthly, Year<=2020,
-               select=c(Year, Month, Date, Variable))
+#now let's create the sets for the 3 scenarios
+scenario1 = subset(data_monthly, Year<=2008)
+scenario1$Train = scenario1$Variable
+scenario1$Train[(dim(scenario1)[1]-12+1) : dim(scenario1)[1]] = NA
+
+scenario2 = subset(data_monthly, Year<=2019)
+scenario2$Train = scenario2$Variable
+scenario2$Train[(dim(scenario2)[1]-12+1) : dim(scenario2)[1]] = NA
+
+scenario3 = subset(data_monthly, Year<=2020)
+scenario3$Train = scenario3$Variable
+scenario3$Train[(dim(scenario3)[1]-12+1) : dim(scenario3)[1]] = NA
 
 
 #M0: a baseline model without explanatory variables, 
 # built using the simplest regression model
 # y = b0 + epsilon
 # & using Variable as the KPI
-M0S1 = lm(Variable ~ 1, data = train1) #S1 stands for Scenario 1
+M0S1 = lm(Train ~ 1, data = scenario1) #S1 stands for Scenario 1
 summary(M0S1)
-train1$M0 = M0S1$fitted.values
-train1 %>% ggplot(aes(x = Date, y = Variable))+
+scenario1$M0 = predict(M0S1, newdata = scenario1)
+scenario1$M0residuals = scenario1$Variable - scenario1$M0
+scenario1 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   scale_x_date(date_labels = "%Y-%m-%d")
 
-M0S2 = lm(Variable ~ 1, data = train2) #S2 stands for Scenario 2
+M0S2 = lm(Train ~ 1, data = scenario2) #S2 stands for Scenario 2
 summary(M0S2)
-train2$M0 = M0S2$fitted.values
-train2 %>% ggplot(aes(x = Date, y = Variable))+
+scenario2$M0 = predict(M0S2, newdata = scenario2)
+scenario2$M0residuals = scenario2$Variable - scenario2$M0
+scenario2 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   scale_x_date(date_labels = "%Y-%m-%d")
 
-M0S3 = lm(Variable ~ 1, data = train3) #S3 stands for Scenario 3
+M0S3 = lm(Train ~ 1, data = scenario3) #S3 stands for Scenario 3
 summary(M0S3)
-train3$M0 = M0S3$fitted.values
-train3 %>% ggplot(aes(x = Date, y = Variable))+
+scenario3$M0 = predict(M0S3, newdata = scenario3)
+scenario3$M0residuals = scenario3$Variable - scenario3$M0
+scenario3 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   scale_x_date(date_labels = "%Y-%m-%d")
 
 
 #M1
-dim(train1)
-train1 = train1 %>% mutate(Trend = 1:63) #let's capture trend
-M1S1 = lm(Variable ~ Trend, data = train1)
+M1S1 = lm(Train ~ Trend, data = scenario1)
 summary(M1S1)
-train1$M1 = M1S1$fitted.values
-train1 %>% ggplot(aes(x = Date, y = Variable))+
+scenario1$M1 = predict(M1S1, newdata = scenario1)
+scenario1$M1residuals = scenario1$Variable - scenario1$M1
+scenario1 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
   scale_x_date(date_labels = "%Y-%m-%d")
 
-dim(train2)
-train2 = train2 %>% mutate(Trend = 1:3) #let's capture trend
-M1S2 = lm(Variable ~ Trend, data = train2)
+M1S2 = lm(Train ~ Trend, data = scenario2)
 summary(M1S2)
-train2$M1 = M1S2$fitted.values
-train2 %>% ggplot(aes(x = Date, y = Variable))+
+scenario2$M1 = predict(M1S2, newdata = scenario2)
+scenario2$M1residuals = scenario2$Variable - scenario2$M1
+scenario2 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
   scale_x_date(date_labels = "%Y-%m-%d")
 
-dim(train3)
-train3 = train3 %>% mutate(Trend = 1:207) #let's capture trend
-M1S3 = lm(Variable ~ Trend, data = train3)
+M1S3 = lm(Train ~ Trend, data = scenario3)
 summary(M1S3)
-train3$M1 = M1S3$fitted.values
-train3 %>% ggplot(aes(x = Date, y = Variable))+
+scenario3$M1 = predict(M1S3, newdata = scenario3)
+scenario3$M1residuals = scenario3$Variable - scenario3$M1
+scenario3 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
@@ -217,114 +240,39 @@ train3 %>% ggplot(aes(x = Date, y = Variable))+
 # let's capture and model seasonality - this model will capture only seasonal component
 # we have monthly data with annual seasonality (12 points per cycle)
 # let's use dummy variable
-head(train1)
-train1$JAN = 0
-train1$JAN[train1$Month=="1"] = 1
-train1$FEB = 0
-train1$FEB[train1$Month=="2"] = 1
-train1$MAR = 0
-train1$MAR[train1$Month=="3"] = 1
-train1$APR = 0
-train1$APR[train1$Month=="4"] = 1
-train1$MAY = 0
-train1$MAY[train1$Month=="5"] = 1
-train1$JUN = 0
-train1$JUN[train1$Month=="6"] = 1
-train1$JUL = 0
-train1$JUL[train1$Month=="7"] = 1
-train1$AUG = 0
-train1$AUG[train1$Month=="8"] = 1
-train1$SEP = 0
-train1$SEP[train1$Month=="9"] = 1
-train1$OCT = 0
-train1$OCT[train1$Month=="10"] = 1
-train1$NOV = 0
-train1$NOV[train1$Month=="11"] = 1
-train1$DEC = 0
-train1$DEC[train1$Month=="12"] = 1
-head(train1)
-train1 %>% group_by(Month) %>% summarise(mean(Variable))
-M2S1 = lm(Variable ~ JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
-        data = train1) #to include intercept one month should not be included
+scenario1 %>% group_by(Month) %>% summarise(mean(Variable))
+M2S1 = lm(Train ~ JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
+        data = scenario1) #to include intercept one month should not be included
 summary(M2S1)
-train1$M2 = M2S1$fitted.values
-train1 %>% ggplot(aes(x = Date, y = Variable))+
+scenario1$M2 = predict(M2S1, newdata = scenario1)
+scenario1$M2residuals = scenario1$Variable - scenario1$M2
+scenario1 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
   geom_line(aes(x = Date, y = M2), col = "green") +
   scale_x_date(date_labels = "%Y-%m-%d")
 
-head(train2)
-train2$JAN = 0
-train2$JAN[train1$Month=="1"] = 1
-train2$FEB = 0
-train2$FEB[train1$Month=="2"] = 1
-train2$MAR = 0
-train2$MAR[train1$Month=="3"] = 1
-train2$APR = 0
-train2$APR[train1$Month=="4"] = 1
-train2$MAY = 0
-train2$MAY[train1$Month=="5"] = 1
-train2$JUN = 0
-train2$JUN[train1$Month=="6"] = 1
-train2$JUL = 0
-train2$JUL[train1$Month=="7"] = 1
-train2$AUG = 0
-train2$AUG[train1$Month=="8"] = 1
-train2$SEP = 0
-train2$SEP[train1$Month=="9"] = 1
-train2$OCT = 0
-train2$OCT[train1$Month=="10"] = 1
-train2$NOV = 0
-train2$NOV[train1$Month=="11"] = 1
-train2$DEC = 0
-train2$DEC[train1$Month=="12"] = 1
-head(train2)
-train2 %>% group_by(Month) %>% summarise(mean(Variable))
-M2S2 = lm(Variable ~ JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
-          data = train2) #to include intercept one month should not be included
+scenario2 %>% group_by(Month) %>% summarise(mean(Variable))
+M2S2 = lm(Train ~ JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
+          data = scenario2) #to include intercept one month should not be included
 summary(M2S2)
-train2$M2 = M2S2$fitted.values
-train2 %>% ggplot(aes(x = Date, y = Variable))+
+scenario2$M2 = predict(M2S1, newdata = scenario2)
+scenario2$M2residuals = scenario2$Variable - scenario2$M2
+scenario2 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
   geom_line(aes(x = Date, y = M2), col = "green") +
   scale_x_date(date_labels = "%Y-%m-%d")
 
-head(train3)
-train3$JAN = 0
-train3$JAN[train1$Month=="1"] = 1
-train3$FEB = 0
-train3$FEB[train1$Month=="2"] = 1
-train3$MAR = 0
-train3$MAR[train1$Month=="3"] = 1
-train3$APR = 0
-train3$APR[train1$Month=="4"] = 1
-train3$MAY = 0
-train3$MAY[train1$Month=="5"] = 1
-train3$JUN = 0
-train3$JUN[train1$Month=="6"] = 1
-train3$JUL = 0
-train3$JUL[train1$Month=="7"] = 1
-train3$AUG = 0
-train3$AUG[train1$Month=="8"] = 1
-train3$SEP = 0
-train3$SEP[train1$Month=="9"] = 1
-train3$OCT = 0
-train3$OCT[train1$Month=="10"] = 1
-train3$NOV = 0
-train3$NOV[train1$Month=="11"] = 1
-train3$DEC = 0
-train3$DEC[train1$Month=="12"] = 1
-head(train3)
-train3 %>% group_by(Month) %>% summarise(mean(Variable))
-M2S3 = lm(Variable ~ JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
-          data = train3) #to include intercept one month should not be included
+scenario3 %>% group_by(Month) %>% summarise(mean(Variable))
+M2S3 = lm(Train ~ JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
+          data = scenario3) #to include intercept one month should not be included
 summary(M2S3)
-train3$M2 = M2S3$fitted.values
-train3 %>% ggplot(aes(x = Date, y = Variable))+
+scenario3$M2 = predict(M2S1, newdata = scenario3)
+scenario3$M2residuals = scenario3$Variable - scenario3$M2
+scenario3 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
@@ -333,11 +281,12 @@ train3 %>% ggplot(aes(x = Date, y = Variable))+
 
 
 #M3: a model that captures both trend and seasonal components
-M3S1 = lm(Variable ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
-        data = train1)
+M3S1 = lm(Train ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
+        data = scenario1)
 summary(M3S1)
-train1$M3 = M3S1$fitted.values
-train1 %>% ggplot(aes(x = Date, y = Variable))+
+scenario1$M3 = predict(M3S1, newdata = scenario1)
+scenario1$M3residuals = scenario1$Variable - scenario1$M3
+scenario1 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
@@ -345,11 +294,12 @@ train1 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line(aes(x = Date, y = M3), col = "orange") +
   scale_x_date(date_labels = "%Y-%m-%d")
 
-M3S2 = lm(Variable ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
-          data = train2)
+M3S2 = lm(Train ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
+          data = scenario2)
 summary(M3S2)
-train2$M3 = M3S2$fitted.values
-train2 %>% ggplot(aes(x = Date, y = Variable))+
+scenario2$M3 = predict(M3S2, newdata = scenario2)
+scenario2$M3residuals = scenario2$Variable - scenario2$M3
+scenario2 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
@@ -357,11 +307,12 @@ train2 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line(aes(x = Date, y = M3), col = "orange") +
   scale_x_date(date_labels = "%Y-%m-%d")
 
-M3S3 = lm(Variable ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
-          data = train3)
+M3S3 = lm(Train ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
+          data = scenario3)
 summary(M3S3)
-train3$M3 = M3S3$fitted.values
-train3 %>% ggplot(aes(x = Date, y = Variable))+
+scenario3$M3 = predict(M3S3, newdata = scenario3)
+scenario3$M3residuals = scenario3$Variable - scenario3$M3
+scenario3 %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
@@ -370,48 +321,143 @@ train3 %>% ggplot(aes(x = Date, y = Variable))+
   scale_x_date(date_labels = "%Y-%m-%d")
 
 
-#Evaluation Metrics -------- here we have to use testing datasets???
-RMSE_S1 = c(sqrt(mean(M0S1$residuals^2))*100,
-            sqrt(mean(M1S1$residuals^2))*100,
-            sqrt(mean(M2S1$residuals^2))*100,
-            sqrt(mean(M3S1$residuals^2))*100)
-MAPE_S1 = c(mean(abs((train1$Variable - train1$M0)/train1$Variable),na.rm=TRUE)*100,
-         mean(abs((train1$Variable - train1$M1)/train1$Variable),na.rm=TRUE)*100,
-         mean(abs((train1$Variable - train1$M2)/train1$Variable),na.rm=TRUE)*100,
-         mean(abs((train1$Variable - train1$M3)/train1$Variable),na.rm=TRUE)*100)
+#Evaluation Metrics for Training Sets
+RMSE_S1_train = c(sqrt(mean((scenario1$M0residuals[1:(dim(scenario1)[1]-12)])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario1$M1residuals[1:(dim(scenario1)[1]-12)])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario1$M2residuals[1:(dim(scenario1)[1]-12)])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario1$M3residuals[1:(dim(scenario1)[1]-12)])^2, na.rm = TRUE)))
+MAPE_S1_train = c(mean(abs((scenario1$Variable[1:(dim(scenario1)[1]-12)] - 
+                      scenario1$M0[1:(dim(scenario1)[1]-12)]) / 
+                      scenario1$Variable[1:(dim(scenario1)[1]-12)])),
+                  mean(abs((scenario1$Variable[1:(dim(scenario1)[1]-12)] - 
+                      scenario1$M1[1:(dim(scenario1)[1]-12)]) / 
+                      scenario1$Variable[1:(dim(scenario1)[1]-12)])),
+                  mean(abs((scenario1$Variable[1:(dim(scenario1)[1]-12)] - 
+                      scenario1$M2[1:(dim(scenario1)[1]-12)]) / 
+                      scenario1$Variable[1:(dim(scenario1)[1]-12)])),
+                  mean(abs((scenario1$Variable[1:(dim(scenario1)[1]-12)] - 
+                      scenario1$M3[1:(dim(scenario1)[1]-12)]) / 
+                      scenario1$Variable[1:(dim(scenario1)[1]-12)])))
 
-RMSE_S2 = c(sqrt(mean(M0S2$residuals^2))*100,
-            sqrt(mean(M1S2$residuals^2))*100,
-            sqrt(mean(M2S2$residuals^2))*100,
-            sqrt(mean(M3S2$residuals^2))*100)
-MAPE_S2 = c(mean(abs((train2$Variable - train2$M0)/train2$Variable),na.rm=TRUE)*100,
-            mean(abs((train2$Variable - train2$M1)/train2$Variable),na.rm=TRUE)*100,
-            mean(abs((train2$Variable - train2$M2)/train2$Variable),na.rm=TRUE)*100,
-            mean(abs((train2$Variable - train2$M3)/train2$Variable),na.rm=TRUE)*100)
+RMSE_S2_train = c(sqrt(mean((scenario2$M0residuals[1:(dim(scenario2)[1]-12)])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario2$M1residuals[1:(dim(scenario2)[1]-12)])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario2$M2residuals[1:(dim(scenario2)[1]-12)])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario2$M3residuals[1:(dim(scenario2)[1]-12)])^2, na.rm = TRUE)))
+MAPE_S2_train = c(mean(abs((scenario2$Variable[1:(dim(scenario2)[1]-12)] - 
+                      scenario2$M0[1:(dim(scenario2)[1]-12)]) / 
+                      scenario2$Variable[1:(dim(scenario2)[1]-12)])),
+                  mean(abs((scenario2$Variable[1:(dim(scenario2)[1]-12)] - 
+                      scenario2$M1[1:(dim(scenario2)[1]-12)]) / 
+                      scenario2$Variable[1:(dim(scenario2)[1]-12)])),
+                  mean(abs((scenario2$Variable[1:(dim(scenario2)[1]-12)] - 
+                      scenario2$M2[1:(dim(scenario2)[1]-12)]) / 
+                      scenario2$Variable[1:(dim(scenario2)[1]-12)])),
+                  mean(abs((scenario2$Variable[1:(dim(scenario2)[1]-12)] - 
+                      scenario2$M3[1:(dim(scenario2)[1]-12)]) / 
+                      scenario2$Variable[1:(dim(scenario2)[1]-12)])))
 
-RMSE_S3 = c(sqrt(mean(M0S3$residuals^2))*100,
-            sqrt(mean(M1S3$residuals^2))*100,
-            sqrt(mean(M2S3$residuals^2))*100,
-            sqrt(mean(M3S3$residuals^2))*100)
-MAPE_S3 = c(mean(abs((train3$Variable - train3$M0)/train3$Variable),na.rm=TRUE)*100,
-            mean(abs((train3$Variable - train3$M1)/train3$Variable),na.rm=TRUE)*100,
-            mean(abs((train3$Variable - train3$M2)/train3$Variable),na.rm=TRUE)*100,
-            mean(abs((train3$Variable - train3$M3)/train3$Variable),na.rm=TRUE)*100)
+RMSE_S3_train = c(sqrt(mean((scenario3$M0residuals[1:(dim(scenario3)[1]-12)])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario3$M1residuals[1:(dim(scenario3)[1]-12)])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario3$M2residuals[1:(dim(scenario3)[1]-12)])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario3$M3residuals[1:(dim(scenario3)[1]-12)])^2, na.rm = TRUE)))
+MAPE_S3_train = c(mean(abs((scenario3$Variable[1:(dim(scenario3)[1]-12)] - 
+                      scenario3$M0[1:(dim(scenario3)[1]-12)]) / 
+                      scenario3$Variable[1:(dim(scenario3)[1]-12)])),
+                  mean(abs((scenario3$Variable[1:(dim(scenario3)[1]-12)] - 
+                      scenario3$M1[1:(dim(scenario3)[1]-12)]) / 
+                      scenario3$Variable[1:(dim(scenario3)[1]-12)])),
+                  mean(abs((scenario3$Variable[1:(dim(scenario3)[1]-12)] - 
+                      scenario3$M2[1:(dim(scenario3)[1]-12)]) / 
+                      scenario3$Variable[1:(dim(scenario3)[1]-12)])),
+                  mean(abs((scenario3$Variable[1:(dim(scenario3)[1]-12)] - 
+                      scenario3$M3[1:(dim(scenario3)[1]-12)]) / 
+                      scenario3$Variable[1:(dim(scenario3)[1]-12)])))
 
-# now create evaluation table
-accuracy.table = data.frame('S1 MAPE' = MAPE_S1,
+#create evaluation table
+accuracy.table0 = data.frame('S1 MAPE' = MAPE_S1_train,
+                            'S2 MAPE' = MAPE_S2_train,
+                            'S3 MAPE' = MAPE_S3_train)
+at0 = as.matrix(accuracy.table0)
+MAPE_AVG_train = c(rowMeans(at0))
+MAPE_AVG_train
+
+ModelID = paste("M", 0:3, sep = "")
+accuracy.table0 = data.frame(ModelID = ModelID, 'S1 RMSE' = RMSE_S1_train, 
+                            'S1 MAPE' = MAPE_S1_train,
+                            'S2 RMSE' = RMSE_S2_train, 'S2 MAPE' = MAPE_S2_train,
+                            'S3 RMSE' = RMSE_S3_train, 'S3 MAPE' = MAPE_S3_train,
+                            MAPE_AVG_train = MAPE_AVG_train)
+#sort model from most accurate to least accurate based on MAPE
+accuracy.table0 %>% arrange(MAPE_AVG_train)
+
+
+#Evaluation Metrics for Testing Sets
+RMSE_S1 = c(sqrt(mean((scenario1$M0residuals[(dim(scenario1)[1]-12+1):dim(scenario1)[1]])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario1$M1residuals[(dim(scenario1)[1]-12+1):dim(scenario1)[1]])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario1$M2residuals[(dim(scenario1)[1]-12+1):dim(scenario1)[1]])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario1$M3residuals[(dim(scenario1)[1]-12+1):dim(scenario1)[1]])^2, na.rm = TRUE)))
+MAPE_S1 = c(mean(abs((scenario1$Variable[(dim(scenario1)[1]-12+1):dim(scenario1)[1]] - 
+                            scenario1$M0[(dim(scenario1)[1]-12+1):dim(scenario1)[1]]) / 
+                            scenario1$Variable[(dim(scenario1)[1]-12+1):dim(scenario1)[1]])),
+                  mean(abs((scenario1$Variable[(dim(scenario1)[1]-12+1):dim(scenario1)[1]] - 
+                              scenario1$M1[(dim(scenario1)[1]-12+1):dim(scenario1)[1]]) / 
+                             scenario1$Variable[(dim(scenario1)[1]-12+1):dim(scenario1)[1]])),
+                  mean(abs((scenario1$Variable[(dim(scenario1)[1]-12+1):dim(scenario1)[1]] - 
+                              scenario1$M2[(dim(scenario1)[1]-12+1):dim(scenario1)[1]]) / 
+                             scenario1$Variable[(dim(scenario1)[1]-12+1):dim(scenario1)[1]])),
+                  mean(abs((scenario1$Variable[(dim(scenario1)[1]-12+1):dim(scenario1)[1]] - 
+                              scenario1$M3[(dim(scenario1)[1]-12+1):dim(scenario1)[1]]) / 
+                             scenario1$Variable[(dim(scenario1)[1]-12+1):dim(scenario1)[1]])))
+
+RMSE_S2 = c(sqrt(mean((scenario2$M0residuals[(dim(scenario2)[1]-12+1):dim(scenario2)[1]])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario2$M1residuals[(dim(scenario2)[1]-12+1):dim(scenario2)[1]])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario2$M2residuals[(dim(scenario2)[1]-12+1):dim(scenario2)[1]])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario2$M3residuals[(dim(scenario2)[1]-12+1):dim(scenario2)[1]])^2, na.rm = TRUE)))
+MAPE_S2 = c(mean(abs((scenario2$Variable[(dim(scenario2)[1]-12+1):dim(scenario2)[1]] - 
+                              scenario2$M0[(dim(scenario2)[1]-12+1):dim(scenario2)[1]]) / 
+                             scenario2$Variable[(dim(scenario2)[1]-12+1):dim(scenario2)[1]])),
+                  mean(abs((scenario2$Variable[(dim(scenario2)[1]-12+1):dim(scenario2)[1]] - 
+                              scenario2$M1[(dim(scenario2)[1]-12+1):dim(scenario2)[1]]) / 
+                             scenario2$Variable[(dim(scenario2)[1]-12+1):dim(scenario2)[1]])),
+                  mean(abs((scenario2$Variable[(dim(scenario2)[1]-12+1):dim(scenario2)[1]] - 
+                              scenario2$M2[(dim(scenario2)[1]-12+1):dim(scenario2)[1]]) / 
+                             scenario2$Variable[(dim(scenario2)[1]-12+1):dim(scenario2)[1]])),
+                  mean(abs((scenario2$Variable[(dim(scenario2)[1]-12+1):dim(scenario2)[1]] - 
+                              scenario2$M3[(dim(scenario2)[1]-12+1):dim(scenario2)[1]]) / 
+                             scenario2$Variable[(dim(scenario2)[1]-12+1):dim(scenario2)[1]])))
+
+RMSE_S3 = c(sqrt(mean((scenario3$M0residuals[(dim(scenario3)[1]-12+1):dim(scenario3)[1]])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario3$M1residuals[(dim(scenario3)[1]-12+1):dim(scenario3)[1]])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario3$M2residuals[(dim(scenario3)[1]-12+1):dim(scenario3)[1]])^2, na.rm = TRUE)),
+                  sqrt(mean((scenario3$M3residuals[(dim(scenario3)[1]-12+1):dim(scenario3)[1]])^2, na.rm = TRUE)))
+MAPE_S3 = c(mean(abs((scenario3$Variable[(dim(scenario3)[1]-12+1):dim(scenario3)[1]] - 
+                              scenario3$M0[(dim(scenario3)[1]-12+1):dim(scenario3)[1]]) / 
+                             scenario3$Variable[(dim(scenario3)[1]-12+1):dim(scenario3)[1]])),
+                  mean(abs((scenario3$Variable[(dim(scenario3)[1]-12+1):dim(scenario3)[1]] - 
+                              scenario3$M1[(dim(scenario3)[1]-12+1):dim(scenario3)[1]]) / 
+                             scenario3$Variable[(dim(scenario3)[1]-12+1):dim(scenario3)[1]])),
+                  mean(abs((scenario3$Variable[(dim(scenario3)[1]-12+1):dim(scenario3)[1]] - 
+                              scenario3$M2[(dim(scenario3)[1]-12+1):dim(scenario3)[1]]) / 
+                             scenario3$Variable[(dim(scenario3)[1]-12+1):dim(scenario3)[1]])),
+                  mean(abs((scenario3$Variable[(dim(scenario3)[1]-12+1):dim(scenario3)[1]] - 
+                              scenario3$M3[(dim(scenario3)[1]-12+1):dim(scenario3)[1]]) / 
+                             scenario3$Variable[(dim(scenario3)[1]-12+1):dim(scenario3)[1]])))
+
+#create evaluation table
+accuracy.table1 = data.frame('S1 MAPE' = MAPE_S1,
                             'S2 MAPE' = MAPE_S2,
                             'S3 MAPE' = MAPE_S3)
-at = as.matrix(accuracy.table)
-MAPE_AVG = c(rowMeans(at))
+at1 = as.matrix(accuracy.table1)
+MAPE_AVG = c(rowMeans(at1))
 MAPE_AVG
 
 ModelID = paste("M", 0:3, sep = "")
-accuracy.table = data.frame(ModelID = ModelID, 'S1 RMSE' = RMSE_S1, 'S1 MAPE' = MAPE_S1,
+accuracy.table = data.frame(ModelID = ModelID, 'S1 RMSE' = RMSE_S1, 
+                            'S1 MAPE' = MAPE_S1,
                             'S2 RMSE' = RMSE_S2, 'S2 MAPE' = MAPE_S2,
                             'S3 RMSE' = RMSE_S3, 'S3 MAPE' = MAPE_S3,
                             MAPE_AVG = MAPE_AVG)
-# sort model from most accurate to least accurate based on MAPE
+#sort model from most accurate to least accurate based on MAPE
 accuracy.table %>% arrange(MAPE_AVG)
 
 #####################################################################################

@@ -190,6 +190,14 @@ scenario1 %>% ggplot(aes(x = Date, y = Variable, color = Set))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   scale_x_date(date_labels = "%Y-%m-%d")
+scenario1 %>% ggplot(aes(x = Date, y = M0residuals))+
+  geom_line() + theme_bw() + 
+  geom_line(aes(x = Date, y = M0residuals), col = "blue") +
+  geom_hline(yintercept = 0) +
+  scale_x_date(date_labels = "%Y-%m-%d")
+tsdisplay(scenario1$M0residuals,lag.max=60)
+#EVALUATION: M0 is just a baseline model without explanatory variables,
+# so in the graph if residuals we can see no trend, seasons, nor cycles are explained by the model
 
 M0S2 = lm(Train ~ 1, data = scenario2) #S2 stands for Scenario 2
 summary(M0S2)
@@ -199,6 +207,14 @@ scenario2 %>% ggplot(aes(x = Date, y = Variable, color = Set))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   scale_x_date(date_labels = "%Y-%m-%d")
+scenario2 %>% ggplot(aes(x = Date, y = M0residuals))+
+  geom_line() + theme_bw() + 
+  geom_line(aes(x = Date, y = M0residuals), col = "blue") +
+  geom_hline(yintercept = 0) +
+  scale_x_date(date_labels = "%Y-%m-%d")
+tsdisplay(scenario2$M0residuals,lag.max=60)
+#EVALUATION: M0 is just a baseline model without explanatory variables,
+# so in the graph if residuals we can see no trend, seasons, nor cycles are explained by the model
 
 M0S3 = lm(Train ~ 1, data = scenario3) #S3 stands for Scenario 3
 summary(M0S3)
@@ -208,6 +224,14 @@ scenario3 %>% ggplot(aes(x = Date, y = Variable, color = Set))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   scale_x_date(date_labels = "%Y-%m-%d")
+scenario3 %>% ggplot(aes(x = Date, y = M0residuals))+
+  geom_line() + theme_bw() + 
+  geom_line(aes(x = Date, y = M0residuals), col = "blue") +
+  geom_hline(yintercept = 0) +
+  scale_x_date(date_labels = "%Y-%m-%d")
+tsdisplay(scenario3$M0residuals,lag.max=60)
+#EVALUATION: M0 is just a baseline model without explanatory variables,
+# so in the graph if residuals we can see no trend, seasons, nor cycles are explained by the model
 
 
 #M1
@@ -220,8 +244,15 @@ scenario1 %>% ggplot(aes(x = Date, y = Variable, color = Set))+
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
   scale_x_date(date_labels = "%Y-%m-%d")
+scenario1 %>% ggplot(aes(x = Date, y = M1residuals))+
+  geom_line() + theme_bw() + 
+  geom_line(aes(x = Date, y = M1residuals), col = "blue") +
+  geom_hline(yintercept = 0) +
+  scale_x_date(date_labels = "%Y-%m-%d")
 tsdisplay(scenario1$M1residuals,lag.max=60)
 #We see there are systematic patterns that can be modeled by including seasonality
+#EVALUATION: this model now captures trend, but as seen in the residuals graph we
+# can't explain still the seasonality nor what seems to be a cycle in the data
 
 M1S2 = lm(Train ~ Trend, data = scenario2)
 summary(M1S2)
@@ -232,8 +263,15 @@ scenario2 %>% ggplot(aes(x = Date, y = Variable, color = Set))+
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
   scale_x_date(date_labels = "%Y-%m-%d")
+scenario2 %>% ggplot(aes(x = Date, y = M1residuals))+
+  geom_line() + theme_bw() + 
+  geom_line(aes(x = Date, y = M1residuals), col = "blue") +
+  geom_hline(yintercept = 0) +
+  scale_x_date(date_labels = "%Y-%m-%d")
 tsdisplay(scenario2$M1residuals,lag.max=60)
 #We see there are systematic patterns that can be modeled by including seasonality
+#EVALUATION: this model now captures trend, but as seen in the residuals graph we
+# can't explain still the seasonality nor what seems to be a cycle in the data
 
 M1S3 = lm(Train ~ Trend, data = scenario3)
 summary(M1S3)
@@ -244,8 +282,15 @@ scenario3 %>% ggplot(aes(x = Date, y = Variable, color = Set))+
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
   scale_x_date(date_labels = "%Y-%m-%d")
+scenario3 %>% ggplot(aes(x = Date, y = M1residuals))+
+  geom_line() + theme_bw() + 
+  geom_line(aes(x = Date, y = M1residuals), col = "blue") +
+  geom_hline(yintercept = 0) +
+  scale_x_date(date_labels = "%Y-%m-%d")
 tsdisplay(scenario3$M1residuals,lag.max=60)
 #We see there are systematic patterns that can be modeled by including seasonality
+#EVALUATION: this model now captures trend, but as seen in the residuals graph we
+# can't explain still the seasonality nor what seems to be a cycle in the data
 
 
 #M2
@@ -262,8 +307,17 @@ scenario1 %>% ggplot(aes(x = Date, y = Variable, color = Set))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
-  geom_line(aes(x = Date, y = M2), col = "green") +
+  geom_line(aes(x = Date, y = M2), col = "orange") +
   scale_x_date(date_labels = "%Y-%m-%d")
+scenario1 %>% ggplot(aes(x = Date, y = M2residuals))+
+  geom_line() + theme_bw() + 
+  geom_line(aes(x = Date, y = M2residuals), col = "blue") +
+  geom_hline(yintercept = 0) +
+  scale_x_date(date_labels = "%Y-%m-%d")
+tsdisplay(scenario1$M2residuals,lag.max=60)
+#We see there are systematic patterns that can be modeled by including seasonality
+#EVALUATION: this model now captures seasonality, but as seen in the residuals graph we
+# can't explain the trend nor what seems to be a cycle in the data
 
 scenario2 %>% group_by(Month) %>% summarise(mean(Variable))
 M2S2 = lm(Train ~ JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
@@ -275,8 +329,17 @@ scenario2 %>% ggplot(aes(x = Date, y = Variable, color = Set))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
-  geom_line(aes(x = Date, y = M2), col = "green") +
+  geom_line(aes(x = Date, y = M2), col = "orange") +
   scale_x_date(date_labels = "%Y-%m-%d")
+scenario2 %>% ggplot(aes(x = Date, y = M2residuals))+
+  geom_line() + theme_bw() + 
+  geom_line(aes(x = Date, y = M2residuals), col = "blue") +
+  geom_hline(yintercept = 0) +
+  scale_x_date(date_labels = "%Y-%m-%d")
+tsdisplay(scenario2$M2residuals,lag.max=60)
+#We see there are systematic patterns that can be modeled by including seasonality
+#EVALUATION: this model now captures seasonality, but as seen in the residuals graph we
+# can't explain the trend nor what seems to be a cycle in the data
 
 scenario3 %>% group_by(Month) %>% summarise(mean(Variable))
 M2S3 = lm(Train ~ JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
@@ -288,8 +351,17 @@ scenario3 %>% ggplot(aes(x = Date, y = Variable, color = Set))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M0), col = "blue") +
   geom_line(aes(x = Date, y = M1), col = "red") +
-  geom_line(aes(x = Date, y = M2), col = "green") +
+  geom_line(aes(x = Date, y = M2), col = "orange") +
   scale_x_date(date_labels = "%Y-%m-%d")
+scenario3 %>% ggplot(aes(x = Date, y = M2residuals))+
+  geom_line() + theme_bw() + 
+  geom_line(aes(x = Date, y = M2residuals), col = "blue") +
+  geom_hline(yintercept = 0) +
+  scale_x_date(date_labels = "%Y-%m-%d")
+tsdisplay(scenario3$M2residuals,lag.max=60)
+#We see there are systematic patterns that can be modeled by including seasonality
+#EVALUATION: this model now captures seasonality, but as seen in the residuals graph we
+# can't explain the trend nor what seems to be a cycle in the data
 
 
 #M3: a model that captures both trend and seasonal components
@@ -300,15 +372,19 @@ scenario1$M3 = predict(M3S1, newdata = scenario1)
 scenario1$M3residuals = scenario1$Variable - scenario1$M3
 scenario1 %>% ggplot(aes(x = Date, y = Variable, color = Set))+
   geom_line()+ theme_bw() + 
-  geom_line(aes(x = Date, y = M0), col = "blue") +
-  geom_line(aes(x = Date, y = M1), col = "red") +
-  geom_line(aes(x = Date, y = M2), col = "green") +
-  geom_line(aes(x = Date, y = M3), col = "orange") +
+  geom_line(aes(x = Date, y = M3), col = "black") +
+  scale_x_date(date_labels = "%Y-%m-%d")
+scenario1 %>% ggplot(aes(x = Date, y = M3residuals))+
+  geom_line() + theme_bw() + 
+  geom_line(aes(x = Date, y = M3residuals), col = "blue") +
+  geom_hline(yintercept = 0) +
   scale_x_date(date_labels = "%Y-%m-%d")
 tsdisplay(scenario1$M3residuals,lag.max=60)
 #There are significant lags in the ACF graphs.
 #This means that there are systematic patterns that can be modeled by including lags.
-
+#EVALUATION: as we can see now, this model fits much better the data. However, as we see
+# on the residuals, we still miss a cyclical component (the rest looks a lot like noise,
+# but further analysis will be done to demonstrate it).
 
 M3S2 = lm(Train ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
           data = scenario2)
@@ -317,14 +393,19 @@ scenario2$M3 = predict(M3S2, newdata = scenario2)
 scenario2$M3residuals = scenario2$Variable - scenario2$M3
 scenario2 %>% ggplot(aes(x = Date, y = Variable, color = Set))+
   geom_line()+ theme_bw() + 
-  geom_line(aes(x = Date, y = M0), col = "blue") +
-  geom_line(aes(x = Date, y = M1), col = "red") +
-  geom_line(aes(x = Date, y = M2), col = "green") +
-  geom_line(aes(x = Date, y = M3), col = "orange") +
+  geom_line(aes(x = Date, y = M3), col = "black") +
+  scale_x_date(date_labels = "%Y-%m-%d")
+scenario2 %>% ggplot(aes(x = Date, y = M3residuals))+
+  geom_line() + theme_bw() + 
+  geom_line(aes(x = Date, y = M3residuals), col = "blue") +
+  geom_hline(yintercept = 0) +
   scale_x_date(date_labels = "%Y-%m-%d")
 tsdisplay(scenario2$M3residuals,lag.max=60)
 #There are significant lags in the ACF graphs.
 #This means that there are systematic patterns that can be modeled by including lags.
+#EVALUATION: as we can see now, this model fits much better the data. However, as we see
+# on the residuals, we still miss a cyclical component (the rest looks a lot like noise,
+# but further analysis will be done to demonstrate it).
 
 M3S3 = lm(Train ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
           data = scenario3)
@@ -333,26 +414,34 @@ scenario3$M3 = predict(M3S3, newdata = scenario3)
 scenario3$M3residuals = scenario3$Variable - scenario3$M3
 scenario3 %>% ggplot(aes(x = Date, y = Variable, color = Set))+
   geom_line()+ theme_bw() + 
-  geom_line(aes(x = Date, y = M0), col = "blue") +
-  geom_line(aes(x = Date, y = M1), col = "red") +
-  geom_line(aes(x = Date, y = M2), col = "green") +
-  geom_line(aes(x = Date, y = M3), col = "orange") +
+  geom_line(aes(x = Date, y = M3), col = "black") +
+  scale_x_date(date_labels = "%Y-%m-%d")
+scenario3 %>% ggplot(aes(x = Date, y = M3residuals))+
+  geom_line() + theme_bw() + 
+  geom_line(aes(x = Date, y = M3residuals), col = "blue") +
+  geom_hline(yintercept = 0) +
   scale_x_date(date_labels = "%Y-%m-%d")
 tsdisplay(scenario3$M3residuals,lag.max=60)
 #There are significant lags in the ACF graphs.
 #This means that there are systematic patterns that can be modeled by including lags.
+#EVALUATION: as we can see now, this model fits much better the data. However, as we see
+# on the residuals, we still miss a cyclical component (the rest looks a lot like noise,
+# but further analysis will be done to demonstrate it).
 
 
 #M4: a model that captures trend and seasonal components, and takes lags into account
 scenario1$TrainLag1 = lag(scenario1$Train, 1)
 scenario1$TrainLag2 = lag(scenario1$Train, 2)
-scenario1$TrainLag3 = lag(scenario1$Train, 3)
-M4S1 = lm(Train ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV + TrainLag1 + TrainLag2 + TrainLag3,
+scenario1$TrainLag10 = lag(scenario1$Train, 10)
+scenario1$TrainLag12 = lag(scenario1$Train, 12)
+scenario1$TrainLag24 = lag(scenario1$Train, 24)
+M4S1 = lm(Train ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV + 
+            TrainLag1 + TrainLag2 + TrainLag10 + TrainLag12 + TrainLag24,
           data = scenario1)
 summary(M4S1)
 tsdisplay(M4S1$residuals,lag.max=60)
 Box.test(M4S1$residuals)
-#Since p-value = 0.7769 > 0.05, we fail to reject Ho and conclude that there is
+#Since p-value = 0.8403 > 0.05, we fail to reject Ho and conclude that there is
 # no statistically significant evidence that data are not independent
 #Since the last model is the final model I am going to store fitted/predicted values 
 # on training set + forecast on testing sets in column M4 and residuals in column M4residuals
@@ -360,16 +449,20 @@ Box.test(M4S1$residuals)
 scenario1$M4 = NA
 scenario1$M4residuals = NA
 scenario1$M4[!is.na(scenario1$Train) &!is.na(scenario1$TrainLag1) & !is.na(scenario1$TrainLag2) &
-         !is.na(scenario1$TrainLag3)] = M4S1$fitted.values
+         !is.na(scenario1$TrainLag10) & !is.na(scenario1$TrainLag12)
+         & !is.na(scenario1$TrainLag24)] = M4S1$fitted.values
 scenario1$M4residuals[!is.na(scenario1$Train) &!is.na(scenario1$TrainLag1) & !is.na(scenario1$TrainLag2) &
-                           !is.na(scenario1$TrainLag3)] = M4S1$residuals
+                        !is.na(scenario1$TrainLag10) & !is.na(scenario1$TrainLag12)
+                      & !is.na(scenario1$TrainLag24)] = M4S1$residuals
 #Since lags are included we need to create a loop to calculate predictions
 i = dim(scenario1)[1]-12+1 # First testing observation number 
 scenario1$M4[i] = predict(M4S1, newdata = scenario1[i,])
 for(i in (dim(scenario1)[1]-12+1):(dim(scenario1)[1])){
   scenario1$TrainLag1[i] = ifelse(is.na(scenario1$Train[i-1]), scenario1$M4[i-1], scenario1$Train[i-1]) 
   scenario1$TrainLag2[i] = ifelse(is.na(scenario1$Train[i-2]), scenario1$M4[i-2], scenario1$Train[i-2]) 
-  scenario1$TrainLag3[i] = ifelse(is.na(scenario1$Train[i-3]), scenario1$M4[i-3], scenario1$Train[i-3]) 
+  scenario1$TrainLag10[i] = ifelse(is.na(scenario1$Train[i-10]), scenario1$M4[i-10], scenario1$Train[i-10])
+  scenario1$TrainLag12[i] = ifelse(is.na(scenario1$Train[i-12]), scenario1$M4[i-12], scenario1$Train[i-12])
+  scenario1$TrainLag24[i] = ifelse(is.na(scenario1$Train[i-24]), scenario1$M4[i-24], scenario1$Train[i-24])
   scenario1$M4[i] = predict(M4S1, newdata = scenario1[i,])
 }
 scenario1$M4residuals = scenario1$Variable - scenario1$M4
@@ -377,7 +470,13 @@ scenario1 %>% ggplot(aes(x = Date, y = Variable, color = Set))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M4), col = "black") +
   scale_x_date(date_labels = "%Y-%m-%d")
-
+scenario1 %>% ggplot(aes(x = Date, y = M4residuals))+
+  geom_line() + theme_bw() + 
+  geom_line(aes(x = Date, y = M4residuals), col = "blue") +
+  geom_hline(yintercept = 0) +
+  scale_x_date(date_labels = "%Y-%m-%d")
+#EVALUATION: as we have demonstrated, the residuals of this model are noise. Hence,
+# before digging in the metrics, this model is accurate enough
 
 scenario2$TrainLag1 = lag(scenario2$Train, 1)
 scenario2$TrainLag2 = lag(scenario2$Train, 2)
@@ -423,23 +522,26 @@ scenario2 %>% ggplot(aes(x = Date, y = Variable, color = Set))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M4), col = "black") +
   scale_x_date(date_labels = "%Y-%m-%d")
-
-
+scenario2 %>% ggplot(aes(x = Date, y = M4residuals))+
+  geom_line() + theme_bw() + 
+  geom_line(aes(x = Date, y = M4residuals), col = "blue") +
+  geom_hline(yintercept = 0) +
+  scale_x_date(date_labels = "%Y-%m-%d")
+#EVALUATION: as we have demonstrated, the residuals of this model are noise. Hence,
+# before digging in the metrics, this model is accurate enough
 
 scenario3$TrainLag1 = lag(scenario3$Train, 1)
 scenario3$TrainLag2 = lag(scenario3$Train, 2)
-scenario3$TrainLag8 = lag(scenario3$Train, 8)
 scenario3$TrainLag10 = lag(scenario3$Train, 10)
-scenario3$TrainLag11 = lag(scenario3$Train, 11)
 scenario3$TrainLag12 = lag(scenario3$Train, 12)
 scenario3$TrainLag24 = lag(scenario3$Train, 24)
 M4S3 = lm(Train ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV + 
-            TrainLag1 + TrainLag2 + TrainLag8 + TrainLag10 + TrainLag11 + TrainLag12 + TrainLag24,
+            TrainLag1 + TrainLag2 + TrainLag10 + TrainLag12 + TrainLag24,
           data = scenario3)
 summary(M4S3)
 tsdisplay(M4S3$residuals,lag.max=60)
 Box.test(M4S3$residuals)
-#Since p-value = 0.8564 > 0.05, we fail to reject Ho and conclude that there is
+#Since p-value = 0.8794 > 0.05, we fail to reject Ho and conclude that there is
 # no statistically significant evidence that data are not independent
 #Since the last model is the final model I am going to store fitted/predicted values 
 # on training set + forecast on testing sets in column M4 and residuals in column M4residuals
@@ -448,16 +550,12 @@ scenario3$M4 = NA
 scenario3$M4residuals = NA
 scenario3$M4[!is.na(scenario3$Train) &!is.na(scenario3$TrainLag1) & 
                   !is.na(scenario3$TrainLag2) &
-                  !is.na(scenario3$TrainLag8) &
                   !is.na(scenario3$TrainLag10) & 
-                  !is.na(scenario3$TrainLag11) & 
                   !is.na(scenario3$TrainLag12) & 
                   !is.na(scenario3$TrainLag24)] = M4S3$fitted.values
 scenario3$M4residuals[!is.na(scenario3$Train) &!is.na(scenario3$TrainLag1) & 
                            !is.na(scenario3$TrainLag2) &
-                           !is.na(scenario3$TrainLag8) &
                            !is.na(scenario3$TrainLag10) & 
-                           !is.na(scenario3$TrainLag11) & 
                            !is.na(scenario3$TrainLag12) & 
                            !is.na(scenario3$TrainLag24)] = M4S3$residuals
 #Since lags are included we need to create a loop to calculate predictions
@@ -466,9 +564,7 @@ scenario3$M4[i] = predict(M4S3, newdata = scenario3[i,])
 for(i in (dim(scenario3)[1]-12+1):(dim(scenario3)[1])){
   scenario3$TrainLag1[i] = ifelse(is.na(scenario3$Train[i-1]), scenario3$M4[i-1], scenario3$Train[i-1]) 
   scenario3$TrainLag2[i] = ifelse(is.na(scenario3$Train[i-2]), scenario3$M4[i-2], scenario3$Train[i-2])
-  scenario3$TrainLag8[i] = ifelse(is.na(scenario3$Train[i-8]), scenario3$M4[i-8], scenario3$Train[i-8])
   scenario3$TrainLag10[i] = ifelse(is.na(scenario3$Train[i-10]), scenario3$M4[i-10], scenario3$Train[i-10])
-  scenario3$TrainLag11[i] = ifelse(is.na(scenario3$Train[i-11]), scenario3$M4[i-11], scenario3$Train[i-11])
   scenario3$TrainLag12[i] = ifelse(is.na(scenario3$Train[i-12]), scenario3$M4[i-12], scenario3$Train[i-12])
   scenario3$TrainLag24[i] = ifelse(is.na(scenario3$Train[i-24]), scenario3$M4[i-24], scenario3$Train[i-24])
   scenario3$M4[i] = predict(M4S3, newdata = scenario3[i,])
@@ -478,6 +574,13 @@ scenario3 %>% ggplot(aes(x = Date, y = Variable, color = Set))+
   geom_line()+ theme_bw() + 
   geom_line(aes(x = Date, y = M4), col = "black") +
   scale_x_date(date_labels = "%Y-%m-%d")
+scenario3 %>% ggplot(aes(x = Date, y = M4residuals))+
+  geom_line() + theme_bw() + 
+  geom_line(aes(x = Date, y = M4residuals), col = "blue") +
+  geom_hline(yintercept = 0) +
+  scale_x_date(date_labels = "%Y-%m-%d")
+#EVALUATION: as we have demonstrated, the residuals of this model are noise. Hence,
+# before digging in the metrics, this model is accurate enough
 
 
 #Evaluation Metrics for Training Sets
@@ -560,7 +663,8 @@ accuracy.table0 = data.frame(ModelID = ModelID, 'S1 RMSE' = RMSE_S1_train,
                             MAPE_AVG_train = MAPE_AVG_train)
 #sort model from most accurate to least accurate based on MAPE
 accuracy.table0 %>% arrange(MAPE_AVG_train)
-
+#As explained before, M4 is the most accurate one with respect to the trainning data.
+#Metrics support this statement.
 
 #Evaluation Metrics for Testing Sets
 RMSE_S1 = c(sqrt(mean((scenario1$M0residuals[(dim(scenario1)[1]-12+1):dim(scenario1)[1]])^2, na.rm = TRUE)),
@@ -642,7 +746,61 @@ accuracy.table = data.frame(ModelID = ModelID, 'S1 RMSE' = RMSE_S1,
                             MAPE_AVG = MAPE_AVG)
 #sort model from most accurate to least accurate based on MAPE
 accuracy.table %>% arrange(MAPE_AVG)
+#M4 losses the first position on the testing sets, in my opinion because in S3 
+#it misses the prediction by a lot due to the huge impact of covid-19 (while simpler models
+#fit less the data and hence the size of the miss is smaller). However, if we look
+# at S1 and S2, M4 keeps winning as in the training (so I think this refutes a possible overfitting).
+# So I will choose as our champion M4 since it has the lowest Mape on average for training
+# and for S1 and S2 for testing (only loses on S3)
 
 #####################################################################################
 
-#Evaluation:
+#Deployment:
+data_monthly$VariableLag1 = lag(data_monthly$Variable, 1)
+data_monthly$VariableLag2 = lag(data_monthly$Variable, 2)
+data_monthly$VariableLag10 = lag(data_monthly$Variable, 10)
+data_monthly$VariableLag12 = lag(data_monthly$Variable, 12)
+data_monthly$VariableLag24 = lag(data_monthly$Variable, 24)
+Model = lm(Variable ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV + 
+            VariableLag1 + VariableLag2 + VariableLag10 + VariableLag12 + VariableLag24,
+          data = data_monthly)
+summary(Model)
+
+#create table
+forecast.table = data.frame('Trend' = c(rep(227:(227+12))),
+                             'Champion Model Forecast' = c(rep(NA)),
+                              '95% lower bound' = c(rep(NA)),
+                              '95% upper bound' = c(rep(NA)))
+
+predict(Model, newdata = forecast.table, interval='prediction')
+
+predict(Model, newdata = data_monthly[i,], interval='prediction')
+data_monthly$Variable[i]
+#Since the last model is the final model I am going to store fitted/predicted values 
+# on training set + forecast on testing sets in column Model and residuals in column Modelresiduals
+#Now we create columns M4 and M4residuals and fill them with NAs
+data_monthly$Model = NA
+data_monthly$Modelresiduals = NA
+data_monthly$Model[!is.na(data_monthly$Variable) &!is.na(data_monthly$VariableLag1) & !is.na(data_monthly$VariableLag2) &
+               !is.na(data_monthly$VariableLag10) & !is.na(data_monthly$VariableLag12)
+             & !is.na(data_monthly$VariableLag24)] = Model$fitted.values
+data_monthly$Modelresiduals[!is.na(data_monthly$Variable) &!is.na(data_monthly$VariableLag1) & !is.na(data_monthly$VariableLag2) &
+                        !is.na(data_monthly$VariableLag10) & !is.na(data_monthly$VariableLag12)
+                      & !is.na(data_monthly$VariableLag24)] = Model$residuals
+#Since lags are included we need to create a loop to calculate predictions
+i = dim(data_monthly)[1]
+data_monthly$Model[i] = predict(Model, newdata = data_monthly[i,])
+for(i in 1:12){
+  data_monthly$VariableLag1[i] = ifelse(is.na(data_monthly$Variable[i-1]), data_monthly$Model[i-1], data_monthly$Variable[i-1]) 
+  data_monthly$VariableLag2[i] = ifelse(is.na(data_monthly$Variable[i-2]), data_monthly$Model[i-2], data_monthly$Variable[i-2]) 
+  data_monthly$VariableLag10[i] = ifelse(is.na(data_monthly$Variable[i-10]), data_monthly$Model[i-10], data_monthly$Variable[i-10])
+  data_monthly$VariableLag12[i] = ifelse(is.na(data_monthly$Variable[i-12]), data_monthly$Model[i-12], data_monthly$Variable[i-12])
+  data_monthly$VariableLag24[i] = ifelse(is.na(data_monthly$Variable[i-24]), data_monthly$Model[i-24], data_monthly$Variable[i-24])
+  data_monthly$Model[i] = predict(Model, newdata = data_monthly[i,], interval='prediction')
+}
+data_monthly$Modelresiduals = data_monthly$Variable - data_monthly$Model
+data_monthly %>% ggplot(aes(x = Date, y = Variable))+
+  geom_line()+ theme_bw() + 
+  geom_line(aes(x = Date, y = Model), col = "blue") +
+  scale_x_date(date_labels = "%Y-%m-%d")
+str(data_monthly)

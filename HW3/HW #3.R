@@ -824,7 +824,7 @@ for(i in (dim(data_monthly)[1]-12+1):(dim(data_monthly)[1])){
   data_monthly$VariableLag10[i] = ifelse(is.na(data_monthly$Variable[i-10]), data_monthly$Model[i-10], data_monthly$Variable[i-10])
   data_monthly$VariableLag12[i] = ifelse(is.na(data_monthly$Variable[i-12]), data_monthly$Model[i-12], data_monthly$Variable[i-12])
   data_monthly$VariableLag24[i] = ifelse(is.na(data_monthly$Variable[i-24]), data_monthly$Model[i-24], data_monthly$Variable[i-24])
-  data_monthly$Model[i] = predict(Model, newdata = data_monthly[i,])
+  data_monthly$Model[i] = predict(Model, newdata = data_monthly[i,], interval='prediction')
 }
 
 data_monthly %>% ggplot(aes(x = Date, y = Variable))+

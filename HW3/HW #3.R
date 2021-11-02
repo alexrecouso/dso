@@ -126,6 +126,7 @@ data_monthly$Date = as.Date(data_monthly$Date)
 data_monthly %>% head
 
 #Let's decide over which variable we are going to model, in this case DOMESTIC
+#For International, just overwrite it with Variable (and revert Variable to Domestic)
 colnames(data_monthly) = c('Year', 'Month', 'Variable', 'International', 'Total', 'Date')
 data_monthly %>% head
 
@@ -537,7 +538,7 @@ scenario3$TrainLag12 = lag(scenario3$Train, 12)
 scenario3$TrainLag24 = lag(scenario3$Train, 24)
 M4S3 = lm(Train ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV + 
             TrainLag1 + TrainLag2 + TrainLag10 + TrainLag12 + TrainLag24,
-          data = scenario3)
+            data = scenario3)
 summary(M4S3)
 tsdisplay(M4S3$residuals,lag.max=60)
 Box.test(M4S3$residuals)
@@ -756,6 +757,43 @@ accuracy.table %>% arrange(MAPE_AVG)
 #####################################################################################
 
 #Deployment:
+
+#Change formats to allow appending of rows
+data_monthly$Month = as.numeric(data_monthly$Month)
+data_monthly$Date = data_monthly %>% select(Date) %>% unlist %>%  
+  str_replace_all("-", "") %>% as.numeric
+#Create rows to store predictions
+data_monthly[nrow(data_monthly) + 1,] = as.list(c(2021, 8, NA, NA, NA, 20210801, 227,
+                                                  0,0,0,0,0,0,0,1,0,0,0,0))
+data_monthly[nrow(data_monthly) + 1,] = as.list(c(2021, 9, NA, NA, NA, 20210901, 228,
+                                                  0,0,0,0,0,0,0,0,1,0,0,0))
+data_monthly[nrow(data_monthly) + 1,] = as.list(c(2021, 10, NA, NA, NA, 20211001, 229,
+                                                  0,0,0,0,0,0,0,0,0,1,0,0))
+data_monthly[nrow(data_monthly) + 1,] = as.list(c(2021, 11, NA, NA, NA, 20211101, 230,
+                                                  0,0,0,0,0,0,0,0,0,0,1,0))
+data_monthly[nrow(data_monthly) + 1,] = as.list(c(2021, 12, NA, NA, NA, 20211201, 231,
+                                                  0,0,0,0,0,0,0,0,0,0,0,1))
+data_monthly[nrow(data_monthly) + 1,] = as.list(c(2021, 1, NA, NA, NA, 20220101, 232,
+                                                  1,0,0,0,0,0,0,0,0,0,0,0))
+data_monthly[nrow(data_monthly) + 1,] = as.list(c(2021, 2, NA, NA, NA, 20220201, 233,
+                                                  0,1,0,0,0,0,0,0,0,0,0,0))
+data_monthly[nrow(data_monthly) + 1,] = as.list(c(2021, 3, NA, NA, NA, 20220301, 234,
+                                                  0,0,1,0,0,0,0,0,0,0,0,0))
+data_monthly[nrow(data_monthly) + 1,] = as.list(c(2021, 4, NA, NA, NA, 20220401, 235,
+                                                  0,0,0,1,0,0,0,0,0,0,0,0))
+data_monthly[nrow(data_monthly) + 1,] = as.list(c(2021, 5, NA, NA, NA, 20220501, 236,
+                                                  0,0,0,0,1,0,0,0,0,0,0,0))
+data_monthly[nrow(data_monthly) + 1,] = as.list(c(2021, 6, NA, NA, NA, 20220601, 237,
+                                                  0,0,0,0,0,1,0,0,0,0,0,0))
+data_monthly[nrow(data_monthly) + 1,] = as.list(c(2021, 7, NA, NA, NA, 20220701, 238,
+                                                  0,0,0,0,0,0,1,0,0,0,0,0))
+#Change formats to revert original state of the dataframe
+data_monthly = data_monthly %>% mutate(Date = str_c(Year, Month, '1', sep='-'))
+data_monthly$Date = as.POSIXlt(data_monthly$Date, format="%Y-%m-%d")
+data_monthly$Date = as.Date(data_monthly$Date)
+data_monthly$Month = as.factor(data_monthly$Month)
+data_monthly %>% tail(13)
+
 data_monthly$VariableLag1 = lag(data_monthly$Variable, 1)
 data_monthly$VariableLag2 = lag(data_monthly$Variable, 2)
 data_monthly$VariableLag10 = lag(data_monthly$Variable, 10)
@@ -766,16 +804,6 @@ Model = lm(Variable ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SE
           data = data_monthly)
 summary(Model)
 
-#create table
-forecast.table = data.frame('Trend' = c(rep(227:(227+12))),
-                             'Champion Model Forecast' = c(rep(NA)),
-                              '95% lower bound' = c(rep(NA)),
-                              '95% upper bound' = c(rep(NA)))
-
-predict(Model, newdata = forecast.table, interval='prediction')
-
-predict(Model, newdata = data_monthly[i,], interval='prediction')
-data_monthly$Variable[i]
 #Since the last model is the final model I am going to store fitted/predicted values 
 # on training set + forecast on testing sets in column Model and residuals in column Modelresiduals
 #Now we create columns M4 and M4residuals and fill them with NAs
@@ -790,17 +818,28 @@ data_monthly$Modelresiduals[!is.na(data_monthly$Variable) &!is.na(data_monthly$V
 #Since lags are included we need to create a loop to calculate predictions
 i = dim(data_monthly)[1]
 data_monthly$Model[i] = predict(Model, newdata = data_monthly[i,])
-for(i in 1:12){
+for(i in (dim(data_monthly)[1]-12+1):(dim(data_monthly)[1])){
   data_monthly$VariableLag1[i] = ifelse(is.na(data_monthly$Variable[i-1]), data_monthly$Model[i-1], data_monthly$Variable[i-1]) 
   data_monthly$VariableLag2[i] = ifelse(is.na(data_monthly$Variable[i-2]), data_monthly$Model[i-2], data_monthly$Variable[i-2]) 
   data_monthly$VariableLag10[i] = ifelse(is.na(data_monthly$Variable[i-10]), data_monthly$Model[i-10], data_monthly$Variable[i-10])
   data_monthly$VariableLag12[i] = ifelse(is.na(data_monthly$Variable[i-12]), data_monthly$Model[i-12], data_monthly$Variable[i-12])
   data_monthly$VariableLag24[i] = ifelse(is.na(data_monthly$Variable[i-24]), data_monthly$Model[i-24], data_monthly$Variable[i-24])
-  data_monthly$Model[i] = predict(Model, newdata = data_monthly[i,], interval='prediction')
+  data_monthly$Model[i] = predict(Model, newdata = data_monthly[i,])
 }
-data_monthly$Modelresiduals = data_monthly$Variable - data_monthly$Model
+
 data_monthly %>% ggplot(aes(x = Date, y = Variable))+
   geom_line()+ theme_bw() + 
-  geom_line(aes(x = Date, y = Model), col = "blue") +
+  geom_line(aes(x = Date, y = Model), col = "green") +
   scale_x_date(date_labels = "%Y-%m-%d")
-str(data_monthly)
+
+#create table
+forecast.table = data.frame('Month' = c('2021 August', '2021 September',
+                                        '2021 October', '2021 November',
+                                        '2021 December', '2022 January',
+                                        '2022 February', '2022 March',
+                                        '2022 April', '2022 May',
+                                        '2022 June', '2022 July'),
+                            'Champion_Model_Forecast' = c(data_monthly$Model[227:238]),
+                            '95_lower_bound' = c(rep(NA)),
+                            '95_upper_bound' = c(rep(NA)))
+forecast.table

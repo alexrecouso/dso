@@ -199,6 +199,7 @@ scenario1 %>% ggplot(aes(x = Date, y = M0residuals))+
 tsdisplay(scenario1$M0residuals,lag.max=60)
 #EVALUATION: M0 is just a baseline model without explanatory variables,
 # so in the graph if residuals we can see no trend, seasons, nor cycles are explained by the model
+#same is observed for international instead of domestic
 
 M0S2 = lm(Train ~ 1, data = scenario2) #S2 stands for Scenario 2
 summary(M0S2)
@@ -216,6 +217,7 @@ scenario2 %>% ggplot(aes(x = Date, y = M0residuals))+
 tsdisplay(scenario2$M0residuals,lag.max=60)
 #EVALUATION: M0 is just a baseline model without explanatory variables,
 # so in the graph if residuals we can see no trend, seasons, nor cycles are explained by the model
+#same is observed for international instead of domestic
 
 M0S3 = lm(Train ~ 1, data = scenario3) #S3 stands for Scenario 3
 summary(M0S3)
@@ -233,6 +235,7 @@ scenario3 %>% ggplot(aes(x = Date, y = M0residuals))+
 tsdisplay(scenario3$M0residuals,lag.max=60)
 #EVALUATION: M0 is just a baseline model without explanatory variables,
 # so in the graph if residuals we can see no trend, seasons, nor cycles are explained by the model
+#same is observed for international instead of domestic
 
 
 #M1
@@ -254,6 +257,7 @@ tsdisplay(scenario1$M1residuals,lag.max=60)
 #We see there are systematic patterns that can be modeled by including seasonality
 #EVALUATION: this model now captures trend, but as seen in the residuals graph we
 # can't explain still the seasonality nor what seems to be a cycle in the data
+#same is observed for international instead of domestic
 
 M1S2 = lm(Train ~ Trend, data = scenario2)
 summary(M1S2)
@@ -273,6 +277,7 @@ tsdisplay(scenario2$M1residuals,lag.max=60)
 #We see there are systematic patterns that can be modeled by including seasonality
 #EVALUATION: this model now captures trend, but as seen in the residuals graph we
 # can't explain still the seasonality nor what seems to be a cycle in the data
+#same is observed for international instead of domestic
 
 M1S3 = lm(Train ~ Trend, data = scenario3)
 summary(M1S3)
@@ -292,6 +297,7 @@ tsdisplay(scenario3$M1residuals,lag.max=60)
 #We see there are systematic patterns that can be modeled by including seasonality
 #EVALUATION: this model now captures trend, but as seen in the residuals graph we
 # can't explain still the seasonality nor what seems to be a cycle in the data
+#same is observed for international instead of domestic
 
 
 #M2
@@ -319,6 +325,7 @@ tsdisplay(scenario1$M2residuals,lag.max=60)
 #We see there are systematic patterns that can be modeled by including seasonality
 #EVALUATION: this model now captures seasonality, but as seen in the residuals graph we
 # can't explain the trend nor what seems to be a cycle in the data
+#same is observed for international instead of domestic
 
 scenario2 %>% group_by(Month) %>% summarise(mean(Variable))
 M2S2 = lm(Train ~ JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
@@ -341,6 +348,7 @@ tsdisplay(scenario2$M2residuals,lag.max=60)
 #We see there are systematic patterns that can be modeled by including seasonality
 #EVALUATION: this model now captures seasonality, but as seen in the residuals graph we
 # can't explain the trend nor what seems to be a cycle in the data
+#same is observed for international instead of domestic
 
 scenario3 %>% group_by(Month) %>% summarise(mean(Variable))
 M2S3 = lm(Train ~ JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
@@ -363,6 +371,7 @@ tsdisplay(scenario3$M2residuals,lag.max=60)
 #We see there are systematic patterns that can be modeled by including seasonality
 #EVALUATION: this model now captures seasonality, but as seen in the residuals graph we
 # can't explain the trend nor what seems to be a cycle in the data
+#same is observed for international instead of domestic
 
 
 #M3: a model that captures both trend and seasonal components
@@ -386,6 +395,7 @@ tsdisplay(scenario1$M3residuals,lag.max=60)
 #EVALUATION: as we can see now, this model fits much better the data. However, as we see
 # on the residuals, we still miss a cyclical component (the rest looks a lot like noise,
 # but further analysis will be done to demonstrate it).
+#same is observed for international instead of domestic
 
 M3S2 = lm(Train ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
           data = scenario2)
@@ -407,6 +417,7 @@ tsdisplay(scenario2$M3residuals,lag.max=60)
 #EVALUATION: as we can see now, this model fits much better the data. However, as we see
 # on the residuals, we still miss a cyclical component (the rest looks a lot like noise,
 # but further analysis will be done to demonstrate it).
+#same is observed for international instead of domestic
 
 M3S3 = lm(Train ~ Trend + JAN + FEB + MAR + APR + MAY + JUN + JUL + AUG + SEP + OCT + NOV,
           data = scenario3)
@@ -428,6 +439,7 @@ tsdisplay(scenario3$M3residuals,lag.max=60)
 #EVALUATION: as we can see now, this model fits much better the data. However, as we see
 # on the residuals, we still miss a cyclical component (the rest looks a lot like noise,
 # but further analysis will be done to demonstrate it).
+#same is observed for international instead of domestic
 
 
 #M4: a model that captures trend and seasonal components, and takes lags into account
@@ -444,6 +456,8 @@ tsdisplay(M4S1$residuals,lag.max=60)
 Box.test(M4S1$residuals)
 #Since p-value = 0.8403 > 0.05, we fail to reject Ho and conclude that there is
 # no statistically significant evidence that data are not independent
+#for international instead of domestic we would need further analysis to demonstrate that 
+#data are not independent. However since it's 0.49 we would not perform it and adapt to domestic instead
 #Since the last model is the final model I am going to store fitted/predicted values 
 # on training set + forecast on testing sets in column M4 and residuals in column M4residuals
 #Now we create columns M4 and M4residuals and fill them with NAs
@@ -492,6 +506,7 @@ tsdisplay(M4S2$residuals,lag.max=60)
 Box.test(M4S2$residuals)
 #Since p-value = 0.8141 > 0.05, we fail to reject Ho and conclude that there is
 # no statistically significant evidence that data are not independent
+#same for international instead of domestic (0.55)
 #Since the last model is the final model I am going to store fitted/predicted values 
 # on training set + forecast on testing sets in column M4 and residuals in column M4residuals
 #Now we create columns M4 and M4residuals and fill them with NAs
@@ -544,6 +559,8 @@ tsdisplay(M4S3$residuals,lag.max=60)
 Box.test(M4S3$residuals)
 #Since p-value = 0.8794 > 0.05, we fail to reject Ho and conclude that there is
 # no statistically significant evidence that data are not independent
+#for international instead of domestic we would need further analysis to demonstrate that 
+#data are not independent. However since it's 0.3 we would not perform it and adapt to domestic instead
 #Since the last model is the final model I am going to store fitted/predicted values 
 # on training set + forecast on testing sets in column M4 and residuals in column M4residuals
 #Now we create columns M4 and M4residuals and fill them with NAs
@@ -666,6 +683,7 @@ accuracy.table0 = data.frame(ModelID = ModelID, 'S1 RMSE' = RMSE_S1_train,
 accuracy.table0 %>% arrange(MAPE_AVG_train)
 #As explained before, M4 is the most accurate one with respect to the trainning data.
 #Metrics support this statement.
+#same for international instead of domestic
 
 #Evaluation Metrics for Testing Sets
 RMSE_S1 = c(sqrt(mean((scenario1$M0residuals[(dim(scenario1)[1]-12+1):dim(scenario1)[1]])^2, na.rm = TRUE)),
@@ -753,6 +771,7 @@ accuracy.table %>% arrange(MAPE_AVG)
 # at S1 and S2, M4 keeps winning as in the training (so I think this refutes a possible overfitting).
 # So I will choose as our champion M4 since it has the lowest Mape on average for training
 # and for S1 and S2 for testing (only loses on S3)
+#same for international instead of domestic
 
 #####################################################################################
 
@@ -815,6 +834,10 @@ data_monthly$Model[!is.na(data_monthly$Variable) &!is.na(data_monthly$VariableLa
 data_monthly$Modelresiduals[!is.na(data_monthly$Variable) &!is.na(data_monthly$VariableLag1) & !is.na(data_monthly$VariableLag2) &
                         !is.na(data_monthly$VariableLag10) & !is.na(data_monthly$VariableLag12)
                       & !is.na(data_monthly$VariableLag24)] = Model$residuals
+
+data_monthly$LowerBound = NA
+data_monthly$UpperBound = NA
+
 #Since lags are included we need to create a loop to calculate predictions
 i = dim(data_monthly)[1]
 data_monthly$Model[i] = predict(Model, newdata = data_monthly[i,])
@@ -824,13 +847,10 @@ for(i in (dim(data_monthly)[1]-12+1):(dim(data_monthly)[1])){
   data_monthly$VariableLag10[i] = ifelse(is.na(data_monthly$Variable[i-10]), data_monthly$Model[i-10], data_monthly$Variable[i-10])
   data_monthly$VariableLag12[i] = ifelse(is.na(data_monthly$Variable[i-12]), data_monthly$Model[i-12], data_monthly$Variable[i-12])
   data_monthly$VariableLag24[i] = ifelse(is.na(data_monthly$Variable[i-24]), data_monthly$Model[i-24], data_monthly$Variable[i-24])
-  data_monthly$Model[i] = predict(Model, newdata = data_monthly[i,], interval='prediction')
+  data_monthly$Model[i] = predict(Model, newdata = data_monthly[i,])
+  data_monthly$LowerBound[i] = predict(Model, newdata = data_monthly[i,], interval='prediction')[2]
+  data_monthly$UpperBound[i] = predict(Model, newdata = data_monthly[i,], interval='prediction')[3]
 }
-
-data_monthly %>% ggplot(aes(x = Date, y = Variable))+
-  geom_line()+ theme_bw() + 
-  geom_line(aes(x = Date, y = Model), col = "green") +
-  scale_x_date(date_labels = "%Y-%m-%d")
 
 #create table
 forecast.table = data.frame('Month' = c('2021 August', '2021 September',
@@ -840,6 +860,33 @@ forecast.table = data.frame('Month' = c('2021 August', '2021 September',
                                         '2022 April', '2022 May',
                                         '2022 June', '2022 July'),
                             'Champion_Model_Forecast' = c(data_monthly$Model[227:238]),
-                            '95_lower_bound' = c(rep(NA)),
-                            '95_upper_bound' = c(rep(NA)))
+                            '95_lower_bound' = c(data_monthly$LowerBound[227:238]),
+                            '95_upper_bound' = c(data_monthly$UpperBound[227:238]))
 forecast.table
+
+data_monthly %>% ggplot(aes(x = Date, y = Variable))+
+  geom_line()+ theme_bw() + 
+  geom_line(aes(x = Date, y = LowerBound), col = "red") +
+  geom_line(aes(x = Date, y = UpperBound), col = "green") +
+  geom_line(aes(x = Date, y = Model), col = "orange") +
+  scale_x_date(date_labels = "%Y-%m-%d")
+
+#we can see it models pretty well the v-shaped recovery, however it incorporates a lot of volatility
+#probably due to the huge drop and rapid recovery in the recent data
+#as we can see in recent data, the impact of covid in airlines has been notable, that's why
+#our model incorporates a lot of uncertainty expressed as volatility. After such an
+#abrupt change, it is very difficult to predict the future not only in a quantitative manner but
+#also qualitatively. Recent events, evolution of the pandemic, and government regulation
+#will all play an essential role in determining the future demand for airplane travel,
+#hence effectively affecting our forecasts. Our recommendation is that airlines
+#stay flexible and prioritize their ability to manneuver fast and adapt to sudden changes
+#in demand, since the current environment is quite volatile and recent news and events such as travel restrictions
+#can strongly affect the company's operations.
+#In terms of the recession impact, as we have explained we can clearly expect a V-shaped recovery,
+# with demand going back to its previous levels relatively easy once the restrictions
+#are lifted and airlines are allowed to operate again. However, we should take into account
+# the balance sheets of airlines, since they are highly leveraged low-cash companies
+# we should note that if the situation prolongates more than usual
+# this companies may have cash insufficiency that may lead to bankruptcy.
+# However, our quantitative model and qualitative analysis expect the situation to get back
+# to normal quite fast, despite current times being uncertain and volatility be expected.
